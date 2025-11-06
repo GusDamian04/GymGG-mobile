@@ -14,8 +14,8 @@ Cuando se clone este proyecto y deseas colaborar, cuando con este proyecto se de
 
 2. *Al ejecutar el proyecto:*
    - cd gymgg-mobile
-   - npm run android => Ejecutarlo con el celular conectado por celular
-   - npm run web => Ejecutarlo en la web
-   - npm run ios => Ejecutarlo solamente si tienes mac
+   - ```npm run android``` => Ejecutarlo con el celular conectado por celular
+   - ```npm run web``` => Ejecutarlo en la web
+   - ```npm run ios``` => Ejecutarlo solamente si tienes mac
 
 Estos comandos son para ejecutar el proyecto.
