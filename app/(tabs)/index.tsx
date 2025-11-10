@@ -2,13 +2,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
-  Animated,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function LoginScreen() {
@@ -43,7 +43,7 @@ export default function LoginScreen() {
                 icon={"👤"}
                 text="Iniciar sesión"
                 outlined
-                onPress={() => router.replace("/(tabs)")}
+                onPress={() => router.replace("/(tabs)/SingIn")}
             />
             </ScrollView>
         </Animated.View>

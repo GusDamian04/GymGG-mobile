@@ -16,7 +16,7 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         {/* Se define que el login sea la pantalla principal */}
-        <Stack.Screen name="login" />
+        <Stack.Screen name="index" />
         
         {/* Se define que el resto de pantallas sean las de la app */}
         <Stack.Screen name="(tabs)" />
