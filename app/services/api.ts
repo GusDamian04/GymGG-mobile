@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// URL base de la API (Django REST Framework)
-export const API_URL = "http://192.168.101.78:8000"; 
+// Cambiar dependiendo de la URL de ngrok que se genere
+export const API_URL = "https://amanda-unmagical-blaise.ngrok-free.dev";
 
 // Instancia de Axios para reutilizar en toda la app
 export const api = axios.create({

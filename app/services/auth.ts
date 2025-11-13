@@ -1,7 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "./api";
 
-const API_URL = "http://192.168.101.78:8000/api/";
+// Cambiar dependiendo de la URL de ngrok que se genere
+const API_URL = "https://amanda-unmagical-blaise.ngrok-free.dev";
 
 export async function loginUser(email: string, password: string) {
     try {
