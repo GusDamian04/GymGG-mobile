@@ -1,3 +1,4 @@
+import { router } from "expo-router/build/exports";
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { loginUser } from "../services/auth";
@@ -18,7 +19,8 @@ export default function SignInScreen() {
             const data = await loginUser(username, password);
             Alert.alert("Éxito", "Inicio de sesión exitoso ✅");
             console.log("Tokens:", data);
-            // aquí podrías navegar al Home o Dashboard
+            // router.replace("/screens/training-result")
+            router.replace("/screens/TrainingLevelFormScreen")
         } catch (err: any) {
             Alert.alert("Error", err.message || "Error al iniciar sesión");
         } finally {
