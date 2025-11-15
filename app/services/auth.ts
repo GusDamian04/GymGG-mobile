@@ -9,6 +9,7 @@ export async function loginUser(email: string, password: string) {
         const response = await api.post(`${API_URL}/api/auth/login/`, {
             email: email,
             password: password,
+            client: 'mobile',
         });
         const access = response.data.access || response.data.access_token;
         const refresh = response.data.refresh || response.data.refresh_token;

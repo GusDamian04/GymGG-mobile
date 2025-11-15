@@ -43,7 +43,7 @@ export default function LoginScreen() {
                 icon={"👤"}
                 text="Iniciar sesión"
                 outlined
-                onPress={() => router.replace("/(tabs)/SingIn")}
+                onPress={() => router.replace("/screens/SingIn")}
             />
             </ScrollView>
         </Animated.View>

@@ -2,16 +2,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-    Dimensions,
-    FlatList,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
+
+
+
+
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -82,8 +87,9 @@ export const TrainingLevelForm = () => {
   const submitForm = () => {
     // Navegar con Expo Router y pasar parámetros
     // Cast to any to avoid strict typed route errors for routes not present in generated types
-    router.push({
-      pathname: '/training-result',
+    
+    router.replace({
+      pathname: '/screens/training-result',
       params: {
         gender,
         age: age?.toString(),
