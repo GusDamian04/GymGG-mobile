@@ -243,7 +243,7 @@ export default function RoutineExecutionScreen() {
 
                         <TouchableOpacity
                             style={styles.finishButton}
-                            onPress={() => router.replace("/screens/HomeScreen")}
+                            onPress={() => router.replace("/screens/home-screen")}
                             activeOpacity={0.8}
                         >
                             <LinearGradient

@@ -84,7 +84,7 @@ export const TrainingLevelForm = () => {
 
     // Navegar a la selección de rutinas
     router.push({
-      pathname: '/screens/RoutineSelectionScreen',
+      pathname: '/screens/routine-selection',
       params: {
         selectedLevel,
         fitnessLevel: selectedLevel,
@@ -150,12 +150,6 @@ export const TrainingLevelForm = () => {
         title: 'Problemas cardíacos',
         subtitle: 'Consulta a tu médico',
         value: 'Problemas cardíacos',
-      },
-      {
-        icon: 'medical',
-        title: 'Otro',
-        subtitle: 'Consultar médico',
-        value: 'Otro',
       },
     ];
     return renderQuestionPage(

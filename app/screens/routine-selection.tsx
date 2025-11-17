@@ -284,7 +284,7 @@ export default function RoutineSelectionScreen() {
                             styles.continueButton,
                             !selectedRoutine && styles.continueButtonDisabled,
                         ]}
-                        onPress={() => router.replace("/screens/RoutineDetailsScreen")}
+                        onPress={() => router.replace("/screens/routine-details")}
                         disabled={!selectedRoutine}
                         activeOpacity={0.8}
                     >

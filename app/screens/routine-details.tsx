@@ -225,22 +225,6 @@ export default function RoutineDetailsScreen() {
         }
     };
 
-    const deleteExercise = (exerciseId: string) => {
-        Alert.alert(
-            'Eliminar ejercicio',
-            '¿Estás seguro de que quieres eliminar este ejercicio?',
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Eliminar',
-                    style: 'destructive',
-                    onPress: () => {
-                        setExercises(exercises.filter((ex) => ex.id !== exerciseId));
-                    },
-                },
-            ]
-        );
-    };
 
     const startRoutine = () => {
         router.push({
@@ -326,7 +310,6 @@ export default function RoutineDetailsScreen() {
                             <ExerciseCard
                                 key={exercise.id}
                                 exercise={exercise}
-                                onDelete={() => deleteExercise(exercise.id)}
                                 getDifficultyColor={getDifficultyColor}
                             />
                         ))}
@@ -337,7 +320,7 @@ export default function RoutineDetailsScreen() {
                         <TouchableOpacity
                             style={styles.startButton}
                             onPress={() => router.push({
-                                pathname: '/screens/RoutineExecutionScreen',
+                                pathname: '/screens/routine-execution',
                                 params: {
                                     routineName, 
                                     level, 
@@ -371,9 +354,8 @@ function InfoRow({ icon, label, value }: { icon: React.ComponentProps<typeof Ion
     );
 }
 
-function ExerciseCard({ exercise, onDelete, getDifficultyColor }: {
+function ExerciseCard({ exercise, getDifficultyColor }: {
     exercise: Exercise;
-    onDelete: () => void;
     getDifficultyColor: (diff: string) => string;
 }) {
     return (
@@ -397,9 +379,6 @@ function ExerciseCard({ exercise, onDelete, getDifficultyColor }: {
                         {exercise.difficulty}
                     </Text>
                 </View>
-                <TouchableOpacity onPress={onDelete} activeOpacity={0.8}>
-                    <Ionicons name="trash" size={20} color="#F44336" />
-                </TouchableOpacity>
             </View>
             <View style={styles.exerciseDetails}>
                 <View style={styles.exerciseDetail}>

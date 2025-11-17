@@ -76,7 +76,7 @@ export default function TrainingResultScreen() {
           <TouchableOpacity 
             style={styles.actionButton}
             activeOpacity={0.8}
-            onPress={() => router.replace("/screens/RoutineSelectionScreen")}
+            onPress={() => router.replace("/screens/routine-selection")}
           >
             <LinearGradient
               colors={['#FFC107', '#FF9800']}
