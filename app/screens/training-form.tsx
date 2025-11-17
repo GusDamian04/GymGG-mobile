@@ -1,4 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from "expo-linear-gradient";
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
@@ -11,21 +12,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-
-
-
-
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
-
-// Tema de la app
-const AppTheme = {
-  backgroundColor: '#1a1a1a',
-  cardColor: '#2a2a2a',
-  accentColor: '#00ff88',
-};
 
 export const TrainingLevelForm = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -85,12 +74,20 @@ export const TrainingLevelForm = () => {
   };
 
   const submitForm = () => {
-    // Navegar con Expo Router y pasar parámetros
-    // Cast to any to avoid strict typed route errors for routes not present in generated types
-    
-    router.replace({
-      pathname: '/screens/training-result',
+    // Determinar el nivel basado en la experiencia
+    let selectedLevel = 'beginner';
+    if (experience === 'Intermedio') {
+      selectedLevel = 'intermediate';
+    } else if (experience === 'Avanzado') {
+      selectedLevel = 'advanced';
+    }
+
+    // Navegar a la selección de rutinas
+    router.push({
+      pathname: '/screens/RoutineSelectionScreen',
       params: {
+        selectedLevel,
+        fitnessLevel: selectedLevel,
         gender,
         age: age?.toString(),
         condition,
@@ -118,7 +115,7 @@ export const TrainingLevelForm = () => {
         <TextInput
           style={styles.input}
           placeholder="Ingresa tu edad"
-          placeholderTextColor="#666"
+          placeholderTextColor="#888"
           keyboardType="numeric"
           onChangeText={(value) => {
             const parsedAge = parseInt(value);
@@ -252,7 +249,12 @@ export const TrainingLevelForm = () => {
     );
   };
 
-  const renderQuestionPage = (title: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined, options: ArrayLike<any> | null | undefined, selectedValue: string | null, onSelected: { (value: React.SetStateAction<string | null>): void; (value: React.SetStateAction<string | null>): void; (value: React.SetStateAction<string | null>): void; (value: React.SetStateAction<string | null>): void; (value: React.SetStateAction<string | null>): void; (value: React.SetStateAction<string | null>): void; (arg0: any): void; }) => (
+  const renderQuestionPage = (
+    title: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined,
+    options: ArrayLike<any> | null | undefined,
+    selectedValue: string | null,
+    onSelected: { (value: React.SetStateAction<string | null>): void; (arg0: any): void; }
+  ) => (
     <View style={styles.pageContainer}>
       <Text style={styles.questionTitle}>{title}</Text>
       <FlatList
@@ -266,6 +268,7 @@ export const TrainingLevelForm = () => {
                 styles.optionCard,
                 isSelected && styles.optionCardSelected,
               ]}
+              activeOpacity={0.8}
               onPress={() => onSelected(item.value)}
             >
               <View
@@ -276,8 +279,8 @@ export const TrainingLevelForm = () => {
               >
                 <Ionicons
                   name={item.icon}
-                  size={28}
-                  color={isSelected ? AppTheme.accentColor : '#666'}
+                  size={26}
+                  color={isSelected ? '#FFC107' : '#AAA'}
                 />
               </View>
               <View style={styles.optionTextContainer}>
@@ -297,7 +300,7 @@ export const TrainingLevelForm = () => {
                 <Ionicons
                   name="checkmark-circle"
                   size={24}
-                  color={AppTheme.accentColor}
+                  color="#FFC107"
                 />
               )}
             </TouchableOpacity>
@@ -308,62 +311,72 @@ export const TrainingLevelForm = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        {currentPage > 0 && (
-          <TouchableOpacity onPress={previousPage} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity>
-        )}
-        <View style={styles.progressBarContainer}>
-          <View
-            style={[
-              styles.progressBar,
-              { width: `${((currentPage + 1) / 7) * 100}%` },
-            ]}
-          />
+    <LinearGradient colors={["#0D0D0D", "#1C1C1C"]} style={styles.container}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.header}>
+          {currentPage > 0 && (
+            <TouchableOpacity onPress={previousPage} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+          )}
+          <View style={styles.progressBarContainer}>
+            <View
+              style={[
+                styles.progressBar,
+                { width: `${((currentPage + 1) / 7) * 100}%` },
+              ]}
+            />
+          </View>
         </View>
-      </View>
 
-      <ScrollView
-        ref={scrollViewRef}
-        horizontal
-        pagingEnabled
-        scrollEnabled={false}
-        showsHorizontalScrollIndicator={false}
-        style={styles.scrollView}
-      >
-        <View style={{ width }}>{renderGenderPage()}</View>
-        <View style={{ width }}>{renderAgePage()}</View>
-        <View style={{ width }}>{renderConditionPage()}</View>
-        <View style={{ width }}>{renderGoalPage()}</View>
-        <View style={{ width }}>{renderExperiencePage()}</View>
-        <View style={{ width }}>{renderDurationPage()}</View>
-        <View style={{ width }}>{renderAvailableTimePage()}</View>
-      </ScrollView>
-
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity
-          style={[
-            styles.continueButton,
-            !canContinue() && styles.continueButtonDisabled,
-          ]}
-          onPress={nextPage}
-          disabled={!canContinue()}
+        <ScrollView
+          ref={scrollViewRef}
+          horizontal
+          pagingEnabled
+          scrollEnabled={false}
+          showsHorizontalScrollIndicator={false}
+          style={styles.scrollView}
         >
-          <Text style={styles.continueButtonText}>
-            {currentPage === 6 ? 'Finalizar' : 'Continuar'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          <View style={{ width }}>{renderGenderPage()}</View>
+          <View style={{ width }}>{renderAgePage()}</View>
+          <View style={{ width }}>{renderConditionPage()}</View>
+          <View style={{ width }}>{renderGoalPage()}</View>
+          <View style={{ width }}>{renderExperiencePage()}</View>
+          <View style={{ width }}>{renderDurationPage()}</View>
+          <View style={{ width }}>{renderAvailableTimePage()}</View>
+        </ScrollView>
+
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity
+            style={[
+              styles.continueButton,
+              !canContinue() && styles.continueButtonDisabled,
+            ]}
+            onPress={nextPage}
+            disabled={!canContinue()}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={canContinue() ? ['#FFC107', '#FF9800'] : ['#444', '#444']}
+              style={styles.gradient}
+            >
+              <Text style={[
+                styles.continueButtonText,
+                !canContinue() && styles.continueButtonTextDisabled
+              ]}>
+                {currentPage === 6 ? 'Finalizar' : 'Continuar'}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppTheme.backgroundColor,
   },
   header: {
     flexDirection: 'row',
@@ -376,13 +389,13 @@ const styles = StyleSheet.create({
   progressBarContainer: {
     flex: 1,
     height: 4,
-    backgroundColor: '#444',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 2,
     overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
-    backgroundColor: AppTheme.accentColor,
+    backgroundColor: '#FFC107',
   },
   scrollView: {
     flex: 1,
@@ -392,7 +405,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   questionTitle: {
-    color: 'white',
+    color: '#FFF',
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 30,
@@ -400,71 +413,86 @@ const styles = StyleSheet.create({
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: AppTheme.cardColor,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 2,
     borderColor: 'transparent',
   },
   optionCardSelected: {
-    borderColor: AppTheme.accentColor,
+    borderColor: '#FFC107',
+    backgroundColor: 'rgba(255,193,7,0.1)',
   },
   iconContainer: {
-    padding: 12,
-    backgroundColor: '#444',
-    borderRadius: 10,
+    width: 50,
+    height: 50,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   iconContainerSelected: {
-    backgroundColor: `${AppTheme.accentColor}33`,
+    backgroundColor: 'rgba(255,193,7,0.2)',
   },
   optionTextContainer: {
     flex: 1,
     marginLeft: 16,
   },
   optionTitle: {
-    color: '#ccc',
+    color: '#CCC',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   optionTitleSelected: {
-    color: 'white',
+    color: '#FFF',
   },
   optionSubtitle: {
-    color: '#666',
-    fontSize: 12,
+    color: '#888',
+    fontSize: 13,
     marginTop: 4,
   },
   inputContainer: {
-    backgroundColor: AppTheme.cardColor,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
     marginBottom: 10,
+    borderWidth: 2,
+    borderColor: 'rgba(255,193,7,0.3)',
   },
   input: {
-    color: 'white',
+    color: '#FFF',
     fontSize: 18,
     padding: 20,
   },
   helperText: {
-    color: '#666',
-    fontSize: 12,
+    color: '#888',
+    fontSize: 13,
+    marginTop: 8,
   },
   bottomContainer: {
     padding: 20,
   },
   continueButton: {
-    backgroundColor: AppTheme.accentColor,
-    height: 50,
-    borderRadius: 25,
+    width: '100%',
+    height: 55,
+    borderRadius: 30,
+    overflow: 'hidden',
+  },
+  gradient: {
+    flex: 1,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
   },
   continueButtonDisabled: {
-    backgroundColor: '#444',
+    opacity: 0.5,
   },
   continueButtonText: {
-    color: 'black',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: '#0D0D0D',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  continueButtonTextDisabled: {
+    color: '#888',
   },
 });

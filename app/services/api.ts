@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Cambiar dependiendo de la URL de ngrok que se genere
-export const API_URL = "https://amanda-unmagical-blaise.ngrok-free.dev";
+export const API_URL = "https://trigonometrically-aforethought-yamileth.ngrok-free.dev";
 
 // Instancia de Axios para reutilizar en toda la app
 export const api = axios.create({
