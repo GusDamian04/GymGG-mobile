@@ -24,12 +24,12 @@ export const TrainingLevelForm = () => {
   const [goal, setGoal] = useState<string | null>(null);
   const [experience, setExperience] = useState<string | null>(null);
   const [duration, setDuration] = useState<string | null>(null);
-  const [availableTime, setAvailableTime] = useState<string | null>(null);
+  // const [availableTime, setAvailableTime] = useState<string | null>(null);
 
   const scrollViewRef = useRef<ScrollView>(null);
 
   const nextPage = () => {
-    if (currentPage < 6) {
+    if (currentPage < 5) {
       const nextPageIndex = currentPage + 1;
       setCurrentPage(nextPageIndex);
       scrollViewRef.current?.scrollTo({
@@ -66,8 +66,8 @@ export const TrainingLevelForm = () => {
         return experience !== null;
       case 5:
         return duration !== null;
-      case 6:
-        return availableTime !== null;
+      // case 6:
+      //   return availableTime !== null;
       default:
         return false;
     }
@@ -94,7 +94,7 @@ export const TrainingLevelForm = () => {
         goal,
         experience,
         duration,
-        availableTime,
+        // availableTime,
       },
     } as any);
   };
@@ -234,20 +234,20 @@ export const TrainingLevelForm = () => {
     );
   };
 
-  const renderAvailableTimePage = () => {
-    const options = [
-      { icon: 'time', title: '30 minutos', value: '30 minutos' },
-      { icon: 'time', title: '1 hora', value: '1 hora' },
-      { icon: 'time', title: '1 hora y media', value: '1 hora y media' },
-      { icon: 'time', title: '2 horas o más', value: '2 horas o más' },
-    ];
-    return renderQuestionPage(
-      '¿Cuánto tiempo tienes disponible por día?',
-      options,
-      availableTime,
-      setAvailableTime
-    );
-  };
+  // const renderAvailableTimePage = () => {
+  //   const options = [
+  //     { icon: 'time', title: '30 minutos', value: '30 minutos' },
+  //     { icon: 'time', title: '1 hora', value: '1 hora' },
+  //     { icon: 'time', title: '1 hora y media', value: '1 hora y media' },
+  //     { icon: 'time', title: '2 horas o más', value: '2 horas o más' },
+  //   ];
+  //   return renderQuestionPage(
+  //     '¿Cuánto tiempo tienes disponible por día?',
+  //     options,
+  //     availableTime,
+  //     setAvailableTime
+  //   );
+  // };
 
   const renderQuestionPage = (
     title: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined,
@@ -343,7 +343,7 @@ export const TrainingLevelForm = () => {
           <View style={{ width }}>{renderGoalPage()}</View>
           <View style={{ width }}>{renderExperiencePage()}</View>
           <View style={{ width }}>{renderDurationPage()}</View>
-          <View style={{ width }}>{renderAvailableTimePage()}</View>
+          {/* <View style={{ width }}>{renderAvailableTimePage()}</View> */}
         </ScrollView>
 
         <View style={styles.bottomContainer}>
@@ -364,7 +364,7 @@ export const TrainingLevelForm = () => {
                 styles.continueButtonText,
                 !canContinue() && styles.continueButtonTextDisabled
               ]}>
-                {currentPage === 6 ? 'Finalizar' : 'Continuar'}
+                {currentPage === 5 ? 'Finalizar' : 'Continuar'}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
