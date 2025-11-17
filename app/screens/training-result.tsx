@@ -1,128 +1,198 @@
-import { Ionicons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-const AppTheme = {
-  backgroundColor: '#1a1a1a',
-  cardColor: '#2a2a2a',
-  accentColor: '#00ff88',
-};
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import React from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TrainingResultScreen() {
   const params = useLocalSearchParams();
-  const { gender, age, condition, goal, experience, duration, availableTime } = params;
+  const { gender, age, condition, goal, experience, duration, availableTime } =
+    params;
 
   const resultData = [
-    { label: 'Género', value: gender, icon: 'person' as const },
-    { label: 'Edad', value: `${age} años`, icon: 'calendar' as const },
-    { label: 'Padecimiento', value: condition, icon: 'medical' as const },
-    { label: 'Objetivo', value: goal, icon: 'flag' as const },
-    { label: 'Experiencia', value: experience, icon: 'barbell' as const },
-    { label: 'Plazo', value: duration, icon: 'calendar' as const },
-    { label: 'Tiempo disponible', value: availableTime, icon: 'time' as const },
+    { label: "Género", value: gender, icon: "person" },
+    { label: "Edad", value: `${age} años`, icon: "calendar" },
+    { label: "Padecimiento", value: condition, icon: "medkit" },
+    { label: "Objetivo", value: goal, icon: "flag" },
+    { label: "Experiencia", value: experience, icon: "barbell" },
+    { label: "Plazo", value: duration, icon: "calendar" },
+    { label: "Tiempo disponible", value: availableTime, icon: "time" },
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.resultHeader}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="white" />
-        </TouchableOpacity>
-        <Text style={styles.resultHeaderTitle}>Tu Perfil de Entrenamiento</Text>
-      </View>
+    <LinearGradient
+      colors={["#0D0D0D", "#1C1C1C"]}
+      style={styles.container}
+    >
+      <SafeAreaView style={{ flex: 1 }}>
 
-      <ScrollView style={styles.resultContent}>
-        {resultData.map((item, index) => (
-          <View key={index} style={styles.resultCard}>
-            <View style={styles.resultIconContainer}>
-              <Ionicons name={item.icon} size={24} color={AppTheme.accentColor} />
-            </View>
-            <View style={styles.resultTextContainer}>
-              <Text style={styles.resultLabel}>{item.label}</Text>
-              <Text style={styles.resultValue}>{item.value}</Text>
-            </View>
-          </View>
-        ))}
-
-        <View style={styles.completedCard}>
-          <Ionicons name="star" size={40} color={AppTheme.accentColor} />
-          <Text style={styles.completedTitle}>¡Perfil completado!</Text>
-          <Text style={styles.completedSubtitle}>
-            Tu rutina será personalizada según tu experiencia y tiempo disponible.
-          </Text>
+        {/* HEADER */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.8}>
+            <Ionicons name="arrow-back" size={26} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Tu Perfil de Entrenamiento</Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+
+        <ScrollView contentContainerStyle={styles.content}>
+
+          {/* TARJETAS DE RESULTADOS */}
+          {resultData.map((item, index) => (
+            <View key={index} style={styles.card}>
+              <View style={styles.iconBox}>
+                <Ionicons 
+                  name={item.icon as React.ComponentProps<typeof Ionicons>["name"]} 
+                  size={26} 
+                  color="#FFC107" 
+                />
+              </View>
+
+              <View style={{ marginLeft: 16, flex: 1 }}>
+                <Text style={styles.label}>{item.label}</Text>
+                <Text style={styles.value}>{item.value}</Text>
+              </View>
+            </View>
+          ))}
+
+          {/* COMPLETED */}
+          <View style={styles.completedBox}>
+            <View style={styles.starCircle}>
+              <Ionicons name="star" size={40} color="#FFC107" />
+            </View>
+            <Text style={styles.completedTitle}>¡Perfil Completado!</Text>
+            <Text style={styles.completedSubtitle}>
+              Tu rutina será personalizada según tu experiencia y tiempo disponible.
+            </Text>
+          </View>
+
+          {/* BOTÓN DE ACCIÓN */}
+          <TouchableOpacity 
+            style={styles.actionButton}
+            activeOpacity={0.8}
+            onPress={() => router.replace("/screens/routine-selection")}
+          >
+            <LinearGradient
+              colors={['#FFC107', '#FF9800']}
+              style={styles.gradient}
+            >
+              <Text style={styles.actionButtonText} >Comenzar Entrenamiento</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppTheme.backgroundColor,
   },
-  resultHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
-  resultHeaderTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+  headerTitle: {
+    color: "#FFF",
+    fontSize: 20,
+    fontWeight: "bold",
     marginLeft: 12,
   },
-  resultContent: {
-    flex: 1,
+
+  content: {
     padding: 20,
+    paddingBottom: 40,
   },
-  resultCard: {
-    flexDirection: 'row',
-    backgroundColor: AppTheme.cardColor,
+
+  card: {
+    flexDirection: "row",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,193,7,0.2)",
+  },
+
+  iconBox: {
+    width: 50,
+    height: 50,
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: "rgba(255,193,7,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  resultIconContainer: {
-    padding: 10,
-    backgroundColor: `${AppTheme.accentColor}33`,
-    borderRadius: 8,
+
+  label: {
+    color: "#AAA",
+    fontSize: 13,
   },
-  resultTextContainer: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  resultLabel: {
-    color: '#666',
-    fontSize: 12,
-  },
-  resultValue: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+  value: {
+    color: "white",
+    fontSize: 17,
+    fontWeight: "bold",
     marginTop: 4,
   },
-  completedCard: {
-    backgroundColor: `${AppTheme.accentColor}1A`,
-    borderRadius: 12,
+
+  completedBox: {
+    marginTop: 25,
+    padding: 30,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,193,7,0.1)",
     borderWidth: 1,
-    borderColor: AppTheme.accentColor,
-    padding: 20,
-    alignItems: 'center',
-    marginTop: 30,
+    borderColor: "rgba(255,193,7,0.4)",
+    alignItems: "center",
+  },
+  starCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(255,193,7,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 15,
   },
   completedTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 10,
+    color: "white",
+    fontSize: 22,
+    fontWeight: "bold",
+    marginTop: 5,
   },
   completedSubtitle: {
-    color: '#666',
+    color: "#AAA",
     fontSize: 14,
-    textAlign: 'center',
-    marginTop: 10,
+    textAlign: "center",
+    marginTop: 12,
+    lineHeight: 20,
+  },
+
+  actionButton: {
+    width: "100%",
+    height: 55,
+    borderRadius: 30,
+    overflow: "hidden",
+    marginTop: 25,
+  },
+  gradient: {
+    flex: 1,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  actionButtonText: {
+    color: "#0D0D0D",
+    fontSize: 18,
+    fontWeight: "600",
   },
 });

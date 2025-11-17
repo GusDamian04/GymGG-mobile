@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "./api";
 
 // Cambiar dependiendo de la URL de ngrok que se genere
-const API_URL = "https://amanda-unmagical-blaise.ngrok-free.dev";
+const API_URL = "https://trigonometrically-aforethought-yamileth.ngrok-free.dev";
 
 export async function loginUser(email: string, password: string) {
     try {
