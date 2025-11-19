@@ -1,16 +1,18 @@
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+    Alert,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
-    Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+// Importar AsyncStorage para limpiar el token
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const styles = StyleSheet.create({
     container: {
@@ -175,7 +177,8 @@ const styles = StyleSheet.create({
 
 export default function HomeScreen() {
     const router = useRouter();
-    const [userName] = useState("Usuario");
+    // En una aplicación real, este estado vendría del contexto de autenticación
+    const [userName] = useState("Usuario"); 
 
     const handleLogout = () => {
         Alert.alert(
@@ -186,8 +189,17 @@ export default function HomeScreen() {
                 {
                     text: 'Cerrar Sesión',
                     style: 'destructive',
-                    onPress: () => {
-                        router.replace('/screens/SingIn')
+                    onPress: async () => {
+                        try {
+                            // LIMPIEZA DEL TOKEN: Borrar el token de AsyncStorage
+                            await AsyncStorage.removeItem('user_auth_token');
+                            
+                            // Navegar de vuelta a la pantalla de inicio de sesión
+                            router.replace('/screens/SingIn');
+                        } catch (e) {
+                            console.error("Error al cerrar sesión", e);
+                            Alert.alert("Error", "No se pudo limpiar la sesión.");
+                        }
                     },
                 },
             ]
@@ -195,24 +207,21 @@ export default function HomeScreen() {
     };
 
     const navigateToRoutines = () => {
-        router.push('/screens/routine-list' as any);
+        // En una app real, la ruta sería /screens/routine-list
+        Alert.alert('Próximamente', 'Funcionalidad de Rutinas en desarrollo.');
     };
 
     const navigateToHistory = () => {
-        Alert.alert('Próximamente', 'Esta función estará disponible pronto 🚀');
+        Alert.alert('Próximamente', 'Esta función de Historial estará disponible pronto 🚀');
     };
-
+    
+    // Esto es un placeholder para una acción más compleja
     const createNewRoutine = () => {
-        router.push({
-            pathname: '/screens/routine-details',
-            params: {
-                routineId: '',
-                routineName: 'Nueva Rutina',
-                level: 'Principiante',
-                difficulty: 'Medio',
-                fitnessLevel: 'beginner',
-            },
-        } as any);
+        Alert.alert('Crear Rutina', 'Iniciando proceso de creación de rutina.');
+        // router.push({
+        //     pathname: '/screens/routine-details',
+        //     params: { ... },
+        // } as any);
     };
 
     return (
@@ -234,14 +243,14 @@ export default function HomeScreen() {
                         </View>
                         <TouchableOpacity
                             style={styles.logoutButton}
-                            onPress={() => router.replace("/screens/SingIn")}
+                            onPress={handleLogout}
                             activeOpacity={0.8}
                         >
                             <Ionicons name="log-out-outline" size={20} color="#F44336" />
                         </TouchableOpacity>
                     </View>
 
-                    {/* Welcome Card */}
+                    {/* Welcome Card (Llamada a la Acción) */}
                     <LinearGradient
                         colors={['#FFC107', '#FF9800']}
                         style={styles.welcomeCard}
@@ -259,32 +268,60 @@ export default function HomeScreen() {
                         </View>
                     </LinearGradient>
 
+                    {/* Botón Principal de Creación */}
+                    <TouchableOpacity
+                        style={styles.createButton}
+                        onPress={createNewRoutine}
+                        activeOpacity={0.9}
+                    >
+                        <LinearGradient
+                            colors={['#2E8B57', '#3CB371']} // Un color diferente para CTA principal
+                            style={styles.gradient}
+                        >
+                            <Ionicons name="add-circle-outline" size={24} color="white" />
+                            <Text style={styles.createButtonText}>
+                                Generar Rutina Personalizada
+                            </Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
+
                     {/* Navigation Menu */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Menú Principal</Text>
+                        <Text style={styles.sectionTitle}>Navegación Rápida</Text>
                         <View style={styles.menuGrid}>
                             <MenuButton
-                                icon="fitness"
+                                icon="barbell"
                                 title="Mis Rutinas"
-                                subtitle="Ver y crear rutinas"
+                                subtitle="Ver y crear planes"
                                 color="#FFC107"
-                                onPress={() => router.push('/screens/my-routines')}
+                                onPress={navigateToRoutines}
                             />
                             <MenuButton
-                                icon="time-outline"
-                                title="Historial"
-                                subtitle="Tu progreso"
+                                icon="stats-chart"
+                                title="Progreso"
+                                subtitle="Analiza tu historial"
                                 color="#2196F3"
-                                onPress={() => router.push('/screens/history')}
+                                onPress={navigateToHistory}
                             />
                         </View>
                     </View>
+                    
+                    {/* Placeholder para Sincronización (Opcional) */}
+                    <TouchableOpacity
+                        style={styles.syncButton}
+                        onPress={() => Alert.alert('Sincronizando...', 'Conectando con dispositivos...')}
+                        activeOpacity={0.8}
+                    >
+                        <Ionicons name="sync-outline" size={20} color="#FFC107" />
+                        <Text style={styles.syncButtonText}>Sincronizar Datos</Text>
+                    </TouchableOpacity>
                 </ScrollView>
             </SafeAreaView>
         </LinearGradient>
     );
 }
 
+// Componente auxiliar para botones de menú
 interface MenuButtonProps {
     icon: React.ComponentProps<typeof Ionicons>["name"];
     title: string;
