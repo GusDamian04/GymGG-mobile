@@ -1,8 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Dimensions,
   FlatList,
   ScrollView,
@@ -13,9 +15,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { saveProfile } from '../services/profile';
 
 const { width } = Dimensions.get('window');
 
+// 🚨 La pantalla debe tener el mismo nombre que el archivo para mayor claridad
 export const TrainingLevelForm = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [gender, setGender] = useState<string | null>(null);
@@ -24,7 +28,7 @@ export const TrainingLevelForm = () => {
   const [goal, setGoal] = useState<string | null>(null);
   const [experience, setExperience] = useState<string | null>(null);
   const [duration, setDuration] = useState<string | null>(null);
-  // const [availableTime, setAvailableTime] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Para evitar doble clic
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -57,7 +61,7 @@ export const TrainingLevelForm = () => {
       case 0:
         return gender !== null;
       case 1:
-        return age !== null;
+        return age !== null && age >= 12 && age <= 80;
       case 2:
         return condition !== null;
       case 3:
@@ -66,37 +70,54 @@ export const TrainingLevelForm = () => {
         return experience !== null;
       case 5:
         return duration !== null;
-      // case 6:
-      //   return availableTime !== null;
       default:
         return false;
     }
   };
 
-  const submitForm = () => {
-    // Determinar el nivel basado en la experiencia
-    let selectedLevel = 'beginner';
+  const submitForm = async () => {
+    if (isSubmitting) return; 
+
+    // 1. Calcular el nivel basado en la experiencia (requerido por el backend)
+    let selectedLevel: 'beginner' | 'intermediate' | 'advanced' = 'beginner';
     if (experience === 'Intermedio') {
       selectedLevel = 'intermediate';
     } else if (experience === 'Avanzado') {
       selectedLevel = 'advanced';
     }
 
-    // Navegar a la selección de rutinas
-    router.push({
-      pathname: '/screens/routine-selection',
-      params: {
-        selectedLevel,
-        fitnessLevel: selectedLevel,
-        gender,
-        age: age?.toString(),
-        condition,
-        goal,
-        experience,
-        duration,
-        // availableTime,
-      },
-    } as any);
+    // El objeto de datos debe coincidir con el tipo UserProfile (camelCase)
+    const profileData = {
+      gender,
+      age,
+      condition,
+      goal,
+      experience,
+      duration,
+      fitnessLevel: selectedLevel,
+    };
+    
+    setIsSubmitting(true);
+
+    try {
+        // 2. Llama al servicio real de guardado
+        await saveProfile(profileData as any);
+        
+        // 3. Notificación de éxito y navegación al Home
+        Alert.alert("Éxito", "Tu perfil de fitness ha sido guardado.", [
+            { text: "OK", onPress: () => {
+                // Navegar al Home (reemplazamos la pantalla de historial)
+                router.replace("/screens/home-screen"); 
+            }}
+        ]);
+        
+    } catch (err: any) {
+        // 4. Manejo de errores de la API
+        console.error("Error al guardar perfil:", err);
+        Alert.alert("Error", err.message || "No pudimos guardar tu perfil. Intenta más tarde.");
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const renderGenderPage = () => {
@@ -119,12 +140,14 @@ export const TrainingLevelForm = () => {
           keyboardType="numeric"
           onChangeText={(value) => {
             const parsedAge = parseInt(value);
-            if (parsedAge >= 12 && parsedAge <= 80) {
+            if (!isNaN(parsedAge)) {
               setAge(parsedAge);
             } else {
-              setAge(null);
+              setAge(null); 
             }
           }}
+          value={age !== null ? String(age) : ''}
+          maxLength={2} // Limitar la entrada a dos dígitos
         />
       </View>
       <Text style={styles.helperText}>Edad válida: entre 12 y 80 años</Text>
@@ -150,6 +173,12 @@ export const TrainingLevelForm = () => {
         title: 'Problemas cardíacos',
         subtitle: 'Consulta a tu médico',
         value: 'Problemas cardíacos',
+      },
+      {
+        icon: 'warning',
+        title: 'Otro',
+        subtitle: 'Especificar más tarde',
+        value: 'Otro',
       },
     ];
     return renderQuestionPage(
@@ -228,26 +257,11 @@ export const TrainingLevelForm = () => {
     );
   };
 
-  // const renderAvailableTimePage = () => {
-  //   const options = [
-  //     { icon: 'time', title: '30 minutos', value: '30 minutos' },
-  //     { icon: 'time', title: '1 hora', value: '1 hora' },
-  //     { icon: 'time', title: '1 hora y media', value: '1 hora y media' },
-  //     { icon: 'time', title: '2 horas o más', value: '2 horas o más' },
-  //   ];
-  //   return renderQuestionPage(
-  //     '¿Cuánto tiempo tienes disponible por día?',
-  //     options,
-  //     availableTime,
-  //     setAvailableTime
-  //   );
-  // };
-
   const renderQuestionPage = (
-    title: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined,
-    options: ArrayLike<any> | null | undefined,
+    title: string,
+    options: Array<{ icon: any; title: string; subtitle?: string; value: string }>,
     selectedValue: string | null,
-    onSelected: { (value: React.SetStateAction<string | null>): void; (arg0: any): void; }
+    onSelected: (value: string) => void
   ) => (
     <View style={styles.pageContainer}>
       <Text style={styles.questionTitle}>{title}</Text>
@@ -317,7 +331,7 @@ export const TrainingLevelForm = () => {
             <View
               style={[
                 styles.progressBar,
-                { width: `${((currentPage + 1) / 7) * 100}%` },
+                { width: `${((currentPage + 1) / 6) * 100}%` }, // Corregido: 6 páginas
               ]}
             />
           </View>
@@ -337,29 +351,32 @@ export const TrainingLevelForm = () => {
           <View style={{ width }}>{renderGoalPage()}</View>
           <View style={{ width }}>{renderExperiencePage()}</View>
           <View style={{ width }}>{renderDurationPage()}</View>
-          {/* <View style={{ width }}>{renderAvailableTimePage()}</View> */}
         </ScrollView>
 
         <View style={styles.bottomContainer}>
           <TouchableOpacity
             style={[
               styles.continueButton,
-              !canContinue() && styles.continueButtonDisabled,
+              (!canContinue() || isSubmitting) && styles.continueButtonDisabled,
             ]}
             onPress={nextPage}
-            disabled={!canContinue()}
+            disabled={!canContinue() || isSubmitting}
             activeOpacity={0.8}
           >
             <LinearGradient
               colors={canContinue() ? ['#FFC107', '#FF9800'] : ['#444', '#444']}
               style={styles.gradient}
             >
-              <Text style={[
-                styles.continueButtonText,
-                !canContinue() && styles.continueButtonTextDisabled
-              ]}>
-                {currentPage === 5 ? 'Finalizar' : 'Continuar'}
-              </Text>
+              {isSubmitting ? (
+                <ActivityIndicator color="#0D0D0D" size="small" />
+              ) : (
+                <Text style={[
+                  styles.continueButtonText,
+                  (!canContinue() || isSubmitting) && styles.continueButtonTextDisabled
+                ]}>
+                  {currentPage === 5 ? 'Finalizar' : 'Continuar'}
+                </Text>
+              )}
             </LinearGradient>
           </TouchableOpacity>
         </View>

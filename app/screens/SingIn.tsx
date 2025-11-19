@@ -1,6 +1,7 @@
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -12,8 +13,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { loginUser } from "../services/auth";
+import { getProfile } from "../services/profile";
 
 export default function SignInScreen() {
     const [username, setUsername] = useState("");
@@ -21,6 +22,7 @@ export default function SignInScreen() {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const fadeAnim = useRef(new Animated.Value(0)).current;
+    
 
     useEffect(() => {
         Animated.timing(fadeAnim, {
@@ -39,9 +41,45 @@ export default function SignInScreen() {
         setLoading(true);
         try {
             const data = await loginUser(username, password);
-            Alert.alert("Éxito", "Inicio de sesión exitoso ✅");
-            console.log("Tokens:", data);
-            router.replace("/screens/TrainingLevelFormScreen");
+            if (data && data.error === true) {
+                Alert.alert("Error", data.message);
+                return;
+            }
+
+            try {
+                const profileData = await getProfile(); // profileData es ClientProfileData | null    
+                let isProfileComplete = false;
+
+                console.log("profileData", profileData)
+                if (profileData) {
+                    // El perfil existe (HTTP 200). Ahora verificamos el estado de completitud.
+                    isProfileComplete = true;
+                } 
+                else {
+                    // El perfil NO existe (HTTP 404) -> isProfileComplete permanece en false
+                }
+                console.log("Perfil completo:", isProfileComplete)
+                // --- NUEVA LÓGICA DE NAVEGACIÓN ---
+                if (isProfileComplete) {
+                    // Perfil existe Y está marcado como completo -> Ir al Home
+                    Alert.alert("Éxito", "Inicio de sesión exitoso. Bienvenido de vuelta!");
+                    router.replace("/screens/home-screen");
+                } else {
+                    // Perfil NO existe (404) O existe pero is_complete es FALSE -> Ir al Formulario
+                    Alert.alert("Éxito", "Inicio de sesión exitoso. Por favor, completa tu perfil.");
+                    router.replace("/screens/TrainingLevelFormScreen");
+                }
+            } catch (profileError: any) {
+                // Manejar error 403 capturado por getProfile
+                if (profileError.message.includes("Acceso denegado")) {
+                    Alert.alert("Error", profileError.message);
+                    return;
+                }
+
+                // Si hay otro error
+                Alert.alert("Error de red", "Inicio de sesión exitoso, pero falló la verificación del perfil. Intenta de nuevo.");
+                console.error("Error al verificar perfil después de login:", profileError);
+            }
         } catch (err: any) {
             Alert.alert("Error", err.message || "Error al iniciar sesión");
         } finally {
