@@ -1,14 +1,34 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "./api";
 
-const API_URL = "https://impure-blowzier-ha.ngrok-free.dev";
+// Cambiar dependiendo de la URL de ngrok que se genere
+const API_URL = "https://amanda-unmagical-blaise.ngrok-free.dev";
 
 export async function loginUser(email: string, password: string) {
     try {
-        const response = await api.post(`${API_URL}/api/auth/login/`, {
+        const response = await api.post(`${API_URL}/useraccount/login/`, {
             email: email,
             password: password,
+            client: 'mobile',
         });
+
+        let isStaff = response.data.is_staff;
+        let isSuperuser = response.data.is_superuser;
+        const { is_staff, is_superuser } = response.data;
+        
+        if(typeof is_staff !== 'undefined' && response.data.user) {
+            isStaff = response.data.user.is_staff;
+            isSuperuser = response.data.user.is_superuser;
+        }
+
+        if(isStaff === true || isSuperuser === true) {
+            return {
+                error: true,
+                message: "Acceso denegado. Utiliza la aplicación móvil solo con cuentas de cliente."
+            };
+            // throw new Error("Acceso denegado. Utiliza la aplicación móvil solo con cuentas de cliente.");
+        }
+
         const access = response.data.access || response.data.access_token;
         const refresh = response.data.refresh || response.data.refresh_token;
 
