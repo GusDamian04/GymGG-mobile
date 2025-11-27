@@ -215,6 +215,10 @@ export default function HomeScreen() {
         Alert.alert('Próximamente', 'Esta función de Historial estará disponible pronto 🚀');
     };
     
+    const navigateToPerfil =()=> {
+        router.replace("/screens/profile")
+    }
+
     // Esto es un placeholder para una acción más compleja
     const createNewRoutine = () => {
         Alert.alert('Crear Rutina', 'Iniciando proceso de creación de rutina.');
@@ -235,7 +239,12 @@ export default function HomeScreen() {
                     {/* Header */}
                     <View style={styles.header}>
                         <View style={styles.profileIcon}>
+                            <TouchableOpacity
+                            onPress={navigateToPerfil}
+                            activeOpacity={0.9}>
+
                             <Ionicons name="person" size={28} color="#FFC107" />
+                            </TouchableOpacity>
                         </View>
                         <View style={styles.headerText}>
                             <Text style={styles.greeting}>Hola, {userName}! 👋</Text>
@@ -301,7 +310,7 @@ export default function HomeScreen() {
                                 title="Progreso"
                                 subtitle="Analiza tu historial"
                                 color="#2196F3"
-                                onPress={navigateToHistory}
+                                onPress={()=> router.replace("/screens/history")}
                             />
                         </View>
                     </View>
