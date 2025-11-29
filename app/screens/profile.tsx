@@ -1,13 +1,66 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { getAllMemberships } from "@/app/services/membership";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Profile() {
+const [membershipName, setMembershipName] = useState<string>("Cargando...");
+
       const router = useRouter()
+
+      
+  const [user, setUser] = useState<any>(null);
+  useEffect(() => {
+    const loadUser = async () => {
+      const stored = await AsyncStorage.getItem("userData");
+      if (stored) {
+        setUser(JSON.parse(stored));
+      }
+    };
+
+    loadUser();
+  }, []);
     
+useEffect(() => {
+  const loadUser = async () => {
+    const stored = await AsyncStorage.getItem("userData");
+    if (stored) {
+      const parsedUser = JSON.parse(stored);
+      setUser(parsedUser);
+
+      // ⬅️ Aquí llamas a membership
+      if (parsedUser.membership) {
+        const memberships = await getAllMemberships();
+    
+
+  const match = memberships.find(
+          (m: any) => m.id === parsedUser.membership
+        )
+        if (match) {
+
+          setMembershipName(match.name_membership);
+        } else {
+          setMembershipName("Membresía no encontrada");
+        }
+
+  } else {
+        setMembershipName("Sin membresía");
+      }
+
+    }
+
+
+  };
+
+  loadUser();
+}, []);
+
+  
 return (
   <LinearGradient colors={["#0A0A0A", "#1A1A1A"]} style={styles.container}>
     <View style={styles.content}>
@@ -16,6 +69,7 @@ return (
       <View style={styles.headerRow}>
         <TouchableOpacity
           onPress={() => router.replace("/screens/home-screen")}
+          
           activeOpacity={0.8}
           style={styles.backButtonSmall}
         >
@@ -27,17 +81,21 @@ return (
       {/* Tarjeta del Perfil */}
       <View style={styles.card}>
         <Text style={styles.label}>Nombre de usuario</Text>
-        <Text style={styles.value}>Arturo</Text>
+        <Text style={styles.value}>
+          {user?.name||"cargando"}
+          </Text>
 
         <View style={styles.separator} />
 
         <Text style={styles.label}>Correo electrónico</Text>
-        <Text style={styles.value}>Arturo@example.com</Text>
+        <Text style={styles.value}>
+          {user?.email || "---"}
+          </Text>
 
         <View style={styles.separator} />
 
         <Text style={styles.label}>Tipo de membresía</Text>
-        <Text style={styles.valueHighlight}>Premium Plus</Text>
+        <Text style={styles.valueHighlight}>{membershipName|| "Sin membresia"}</Text>
 
         <View style={styles.separator} />
 

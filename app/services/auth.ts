@@ -31,7 +31,7 @@ export async function loginUser(email: string, password: string) {
 
         const access = response.data.access || response.data.access_token;
         const refresh = response.data.refresh || response.data.refresh_token;
-
+        console.log("soy el responde con info",response.data)
         if (!access || !refresh) {
             console.error("Tokens no encontrados en la respuesta:", response.data);
             throw new Error("Error: el servidor no devolvió tokens válidos.");
@@ -39,6 +39,7 @@ export async function loginUser(email: string, password: string) {
 
         await AsyncStorage.setItem("accessToken", access);
         await AsyncStorage.setItem("refreshToken", refresh);
+        await AsyncStorage.setItem("userData", JSON.stringify(response.data))
 
         api.defaults.headers.common["Authorization"] = `Bearer ${access}`;
 
