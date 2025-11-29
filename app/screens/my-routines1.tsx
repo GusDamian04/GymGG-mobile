@@ -23,40 +23,40 @@ export default function MyRoutines() {
   }, [])
 
   const rutinasGuardadas = [
-    {
-      id: 1,
-      nombre: "Pierna",
-      descripcion: "Ejercicios fundamentales para comenzar",
-      duracion: "30-40 min",
-      dificultad: "Fácil",
-      icono: "fitness",
-      ultimaVez: "Hace 2 días",
-      vecesCompletada: 5,
-      Ejercicios: 4      
-    },
+    // {
+    //   id: 1,
+    //   nombre: "Pierna",
+    //   descripcion: "Ejercicios fundamentales para comenzar",
+    //   duracion: "30-40 min",
+    //   dificultad: "Fácil",
+    //   icono: "fitness",
+    //   ultimaVez: "Hace 2 días",
+    //   vecesCompletada: 5,
+    //   Ejercicios: 4      
+    // },
 
-    {
-      id: 2,
-      nombre: "Brazo",
-      descripcion: "Fortalecimiento básico superior",
-      duracion: "25-35 min",
-      dificultad: "Fácil",
-      icono: "body",
-      ultimaVez: "Hace 5 días",
-      vecesCompletada: 3,
-      Ejercicios: 5
-    },
-    {
-      id: 3,
-      nombre: "Pantorrilla",
-      descripcion: "Core y activación cardiovascular",
-      duracion: "20-30 min",
-      dificultad: "Fácil",
-      icono: "heart",
-      ultimaVez: "Hace 1 semana",
-      vecesCompletada: 7,
-      Ejercicios: 4
-    },
+    // {
+    //   id: 2,
+    //   nombre: "Brazo",
+    //   descripcion: "Fortalecimiento básico superior",
+    //   duracion: "25-35 min",
+    //   dificultad: "Fácil",
+    //   icono: "body",
+    //   ultimaVez: "Hace 5 días",
+    //   vecesCompletada: 3,
+    //   Ejercicios: 5
+    // },
+    // {
+    //   id: 3,
+    //   nombre: "Pantorrilla",
+    //   descripcion: "Core y activación cardiovascular",
+    //   duracion: "20-30 min",
+    //   dificultad: "Fácil",
+    //   icono: "heart",
+    //   ultimaVez: "Hace 1 semana",
+    //   vecesCompletada: 7,
+    //   Ejercicios: 4
+    // },
   ]
 
 
