@@ -208,7 +208,7 @@ export default function HomeScreen() {
 
     const navigateToRoutines = () => {
         // En una app real, la ruta sería /screens/routine-list
-        Alert.alert('Próximamente', 'Funcionalidad de Rutinas en desarrollo.');
+         router.replace("/screens/my-routines1")
     };
 
     const navigateToHistory = () => {
@@ -277,23 +277,7 @@ export default function HomeScreen() {
                         </View>
                     </LinearGradient>
 
-                    {/* Botón Principal de Creación */}
-                    <TouchableOpacity
-                        style={styles.createButton}
-                        onPress={createNewRoutine}
-                        activeOpacity={0.9}
-                    >
-                        <LinearGradient
-                            colors={['#2E8B57', '#3CB371']} // Un color diferente para CTA principal
-                            style={styles.gradient}
-                        >
-                            <Ionicons name="add-circle-outline" size={24} color="white" />
-                            <Text style={styles.createButtonText}>
-                                Generar Rutina Personalizada
-                            </Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
-
+          
                     {/* Navigation Menu */}
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Navegación Rápida</Text>
