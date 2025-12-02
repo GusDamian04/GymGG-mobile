@@ -1,22 +1,49 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Pressable, Modal } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
+import { createRoutineEndPoint } from "../services/routines";
 
-export default function CreateRoutine() {
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
+export default function CreateRoutine () {
     
           const router = useRouter()
     
     
-
   const [routineName, setRoutineName] = useState("");
+  const [routineDes, setRoutineDes] = useState("");
   const [selectedPart, setSelectedPart] = useState<string | null>(null);
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
 
     const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
+const handleCreateRoutine = async () => {
+  
+  const stored = await AsyncStorage.getItem("user_id");
+  console.log("ID del usuario:", stored);
+
+    console.log("descripcion",routineDes)
+
+    try {
+        const nuevaRutina = {
+            Routine_name: routineName,
+            Description: routineDes,
+            user:stored
+            
+        };
+
+        const response = await createRoutineEndPoint(nuevaRutina);
+
+        console.log("Rutina creada:", response);
+    } catch (error) {
+        console.log("Error creando rutina:", error);
+    }
+};
 
 
       const parts = ["Brazo", "Pierna", "Pantorrilla"];
@@ -53,13 +80,21 @@ const rutina: Record<string, { nombre: string; series: string }[]> = {
 
 
         {/* Input nombre */}
-        <Text style={styles.label}>Añade la descripción de tu membresía</Text>
+        <Text style={styles.label}>Añade la el nombre de tu rutina</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ej. Musculo en Brazo"
+          placeholderTextColor="#aaa"
+          value={routineName}
+          onChangeText={setRoutineName}
+        />
+        <Text style={styles.label}>Añade la descripción de tu entrenamiento</Text>
         <TextInput
           style={styles.input}
           placeholder="Ej. Rutina de fuerza Lunes"
           placeholderTextColor="#aaa"
-          value={routineName}
-          onChangeText={setRoutineName}
+          value={routineDes}
+          onChangeText={setRoutineDes}
         />
 
         {/* Select de categoría */}
@@ -143,20 +178,21 @@ const rutina: Record<string, { nombre: string; series: string }[]> = {
       {/* Botón fijo abajo */}
       <TouchableOpacity 
       onPress={()=> {
+
           if (!routineName) {
       alert("Escribe un nombre para la rutina");
       return;
     }
 
+    
+
    if (!selectedPart) {
       alert("En modo dev: viendo el flujo de paginas, iras a my rutinas");
-          router.push({
-                pathname:"/screens/my-routines1",
-                params:{Descripcion:routineName,
-                        nombre:selectedPart,
-                        ejerc:selectedExercises.length
-                }
-            })
+       handleCreateRoutine();  
+                   router.replace('/screens/my-routines1')
+  
+    
+            
       return;
     }
 
@@ -165,15 +201,9 @@ const rutina: Record<string, { nombre: string; series: string }[]> = {
       return;
     }
 
-     
+     handleCreateRoutine();
   
-            router.push({
-                pathname:"/screens/my-routines1",
-                params:{Descripcion:routineName,
-                        nombre:selectedPart,
-                        ejerc:selectedExercises.length
-                }
-            })
+            router.replace('/screens/my-routines1')
       }}
       
       style={styles.fixedButton} activeOpacity={0.9}>

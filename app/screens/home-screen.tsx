@@ -193,6 +193,7 @@ export default function HomeScreen() {
                         try {
                             // LIMPIEZA DEL TOKEN: Borrar el token de AsyncStorage
                             await AsyncStorage.removeItem('user_auth_token');
+                            await AsyncStorage.removeItem('user_id');
                             
                             // Navegar de vuelta a la pantalla de inicio de sesión
                             router.replace('/screens/SingIn');

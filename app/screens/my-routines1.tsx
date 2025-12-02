@@ -6,6 +6,8 @@ import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ToastAndroid } from "react-native";
+import { getAllRoutines } from '../services/routines'
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 export default function MyRoutines() {
@@ -13,6 +15,7 @@ export default function MyRoutines() {
   const fadeAnim = useRef(new Animated.Value(0)).current
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [selectedRoutineId, setSelectedRoutineId] = useState<any>()
+  const [selectedRoutine, setSelectedRoutine] = useState<any>()
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -22,65 +25,61 @@ export default function MyRoutines() {
     }).start()
   }, [])
 
-  const rutinasGuardadas = [
-    // {
-    //   id: 1,
-    //   nombre: "Pierna",
-    //   descripcion: "Ejercicios fundamentales para comenzar",
-    //   duracion: "30-40 min",
-    //   dificultad: "Fácil",
-    //   icono: "fitness",
-    //   ultimaVez: "Hace 2 días",
-    //   vecesCompletada: 5,
-    //   Ejercicios: 4      
-    // },
+  const [rutine,setRoutine]= useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
-    // {
-    //   id: 2,
-    //   nombre: "Brazo",
-    //   descripcion: "Fortalecimiento básico superior",
-    //   duracion: "25-35 min",
-    //   dificultad: "Fácil",
-    //   icono: "body",
-    //   ultimaVez: "Hace 5 días",
-    //   vecesCompletada: 3,
-    //   Ejercicios: 5
-    // },
-    // {
-    //   id: 3,
-    //   nombre: "Pantorrilla",
-    //   descripcion: "Core y activación cardiovascular",
-    //   duracion: "20-30 min",
-    //   dificultad: "Fácil",
-    //   icono: "heart",
-    //   ultimaVez: "Hace 1 semana",
-    //   vecesCompletada: 7,
-    //   Ejercicios: 4
-    // },
-  ]
+    useEffect(() => {
+        const loadRoutine = async () => {
+            try {
+                const data = await getAllRoutines(); // llamaado la API desde el archivo routine.ys
 
+                const mapped = data.map((item:any)=> ({
+                  id: item.id,
+                  nombre: item.Routine_name,
+                  descripcion: item.Description ?? "Sin descripción",
+                   icono:item.icono ?? "fitness",
+                  ultimaVez:item.Last_time_done,
+                  vecesCompletada:item.Times_done,
 
-  const confirmDelete = () => {
-    // Aquí iría la lógica para eliminar la rutina
-    console.log('Eliminando rutina:', selectedRoutineId)
-    setShowDeleteConfirm(false)
+                }))
+                
+                setRoutine(mapped);  
+                
+                                if(data.length>0){
+                                  console.log(data.length>0)
+                                  AsyncStorage.setItem("user_id",data[0].user)
+                                  console.log("si",data[0].user)
+                                }
+                console.log("cargue",mapped)                  //  guardas la data
+            } catch (error) {
+                console.log("Error cargando rutina:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadRoutine();
+    }, []); //  solo al montar el componente
+
+   if (loading) {
+        return <Text>Cargando...</Text>;
+    }
+
+  // const confirmDelete = () => {
+  //   // Aquí iría la lógica para eliminar la rutina
+  //   console.log('Eliminando rutina:', selectedRoutineId)
+  //   setShowDeleteConfirm(false)
  
-  }
-let selectedRoutine = null;
+  // }
 
 try {
   // Validar primero si el ID existe
   if (!selectedRoutineId) {
   
   }
-
   // Buscar la rutina por ID
-  selectedRoutine = rutinasGuardadas.find(r => r.id === selectedRoutineId);
+  // selectedRoutine = rutinasGuardadas.find(r => r.id === selectedRoutineId);
 
-  // Validar si se encontró
-  if (!selectedRoutine) {
-    
-  }
 
 } catch (error: any) {
   console.error("Error al obtener la rutina seleccionada:", error.message);
@@ -90,7 +89,6 @@ try {
     ToastAndroid.SHORT
   );
 
-  selectedRoutine = null; // ← para evitar crasheos
 }
 
   return (
@@ -145,11 +143,27 @@ try {
 
               
             <View style={styles.routinesList}>
+        
+
               
-             {rutinasGuardadas.map((rutina) => (
+              {
+              
+  //             rutine.length===0 ?(
+  //                <Text style={{ textAlign: "center", marginTop: 20 }}>
+  //   No hay rutinas disponibles
+  // </Text>
+  //             ):(
+                
+              
+              
+              rutine.map((rutina) => (
   <TouchableOpacity
     key={rutina.id}
-    onPress={() => setSelectedRoutineId(rutina.id)}
+    onPress={() => {setSelectedRoutineId(rutina.id);
+   setSelectedRoutine(rutina)
+    }
+
+    }
     activeOpacity={0.8}
     style={[
       styles.routineCard,
@@ -179,7 +193,8 @@ try {
       </View>
     </View>
   </TouchableOpacity>
-))}
+)
+)} 
 
             </View>
             </ScrollView>
@@ -188,13 +203,14 @@ try {
     onPress={() => {
       
       
-      if (!selectedRoutine) return ToastAndroid.show("Selecciona una rutina primero", ToastAndroid.SHORT);
+      if (!selectedRoutine.id) return ToastAndroid.show("Selecciona una rutina primero", ToastAndroid.SHORT);
 
 
       router.push(
       {
       pathname:"/screens/routineProgress",
-      params:{nombre:selectedRoutine?.nombre,
+      params:{
+        nombre:selectedRoutine?.nombre,
         Ejercicios: selectedRoutine?.Ejercicios,
         id:selectedRoutine?.id
         
@@ -220,7 +236,7 @@ try {
 </TouchableOpacity>
 
             {/* Mensaje cuando no hay rutinas */}
-            {rutinasGuardadas.length === 0 && (
+            {rutine.length === 0 && (
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>Aún no tienes rutinas guardadas</Text>
                 {/* <TouchableOpacity
