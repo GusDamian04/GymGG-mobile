@@ -106,6 +106,7 @@ const styles = StyleSheet.create({
     menuGrid: {
         flexDirection: 'row',
         gap: 16,
+        marginBottom: 24, // Aumenta este valor (prueba con 24, 28 o 32)
     },
     menuButton: {
         flex: 1,
@@ -172,6 +173,9 @@ const styles = StyleSheet.create({
         color: '#FFC107',
         fontSize: 14,
         fontWeight: '600',
+    },
+    menuButtonSpacer: {
+        flex: 1,
     },
 });
 
@@ -283,32 +287,40 @@ export default function HomeScreen() {
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Navegación Rápida</Text>
                         <View style={styles.menuGrid}>
-                            <MenuButton
-                                icon="barbell"
-                                title="Mis Rutinas"
-                                subtitle="Ver y crear planes"
-                                color="#FFC107"
-                                onPress={navigateToRoutines}
-                            />
-                            <MenuButton
-                                icon="stats-chart"
-                                title="Progreso"
-                                subtitle="Analiza tu historial"
-                                color="#2196F3"
-                                onPress={()=> router.replace("/screens/history")}
-                            />
+                            <View style={{ flex: 1, marginLeft: 8 }}>
+                                <MenuButton
+                                    icon="barbell"
+                                    title="Mis Rutinas"
+                                    subtitle="Ver y crear planes"
+                                    color="#FFC107"
+                                    onPress={navigateToRoutines}
+                                />
+                            </View>
+                            <View style={{ flex: 1, marginLeft: 8 }}>
+                                <MenuButton
+                                    icon="stats-chart"
+                                    title="Progreso"
+                                    subtitle="Analiza tu historial"
+                                    color="#2196F3"
+                                    onPress={()=> router.replace("/screens/history")}
+                                />
+                            </View>
+                        </View>
+                        
+                        <View style={styles.menuGrid}>
+                            <View style={{ flex: 1, marginLeft: 8 }}>
+                                <MenuButton
+                                    icon="fitness"
+                                    title="Ejercicios"
+                                    subtitle="Explora ejercicios"
+                                    color="#FFC107"
+                                    onPress={()=> router.replace("/screens/exercises-list")}
+                                />
+                            </View>
+                            {/* Spacer invisible para mantener el tamaño */}
+                            <View style={styles.menuButtonSpacer} />
                         </View>
                     </View>
-                    
-                    {/* Placeholder para Sincronización (Opcional) */}
-                    <TouchableOpacity
-                        style={styles.syncButton}
-                        onPress={() => Alert.alert('Sincronizando...', 'Conectando con dispositivos...')}
-                        activeOpacity={0.8}
-                    >
-                        <Ionicons name="sync-outline" size={20} color="#FFC107" />
-                        <Text style={styles.syncButtonText}>Sincronizar Datos</Text>
-                    </TouchableOpacity>
                 </ScrollView>
             </SafeAreaView>
         </LinearGradient>
