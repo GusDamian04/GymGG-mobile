@@ -1,6 +1,6 @@
 import { api } from "./api";
 
-const API_URL = "https://impure-blowzier-ha.ngrok-free.dev";
+const API_URL = "https://trigonometrically-aforethought-yamileth.ngrok-free.dev";
 
 export async function getAllMemberships() {
     try {
