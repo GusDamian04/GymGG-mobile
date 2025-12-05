@@ -11,11 +11,41 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 export default function MyRoutines() {
+
   const router = useRouter()
   const fadeAnim = useRef(new Animated.Value(0)).current
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [selectedRoutineId, setSelectedRoutineId] = useState<any>()
   const [selectedRoutine, setSelectedRoutine] = useState<any>()
+
+
+function tiempoTranscurrido(fechaISO: string): string {
+  const fecha = new Date(fechaISO);
+  const hoy = new Date();
+
+  const diffMs = hoy.getTime() - fecha.getTime();
+  const diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDias < 1) {
+    return "hace 0 días";
+  }
+
+  if (diffDias === 1) {
+    return "hace 1 día";
+  }
+
+  const semanas = Math.floor(diffDias / 7);
+
+  if (semanas >= 1) {
+    return semanas === 1
+      ? "hace 1 semana"
+      : `hace ${semanas} semanas`;
+  }
+
+  return `hace ${diffDias} días`;
+}
+
+
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -38,11 +68,11 @@ export default function MyRoutines() {
                   nombre: item.Routine_name,
                   descripcion: item.Description ?? "Sin descripción",
                    icono:item.icono ?? "fitness",
-                  ultimaVez:item.Last_time_done,
+                  ultimaVez:tiempoTranscurrido(item.Last_time_done),
                   vecesCompletada:item.Times_done,
 
                 }))
-                
+                console.log(mapped[0].ultimaVez)
                 setRoutine(mapped);  
                 
                                 if(data.length>0){
@@ -50,7 +80,7 @@ export default function MyRoutines() {
                                   AsyncStorage.setItem("user_id",data[0].user)
                                   console.log("si",data[0].user)
                                 }
-                console.log("cargue",mapped)                  //  guardas la data
+                                //  guardas la data
             } catch (error) {
                 console.log("Error cargando rutina:", error);
             } finally {
@@ -202,9 +232,8 @@ try {
     style={styles.fixedButton}
     onPress={() => {
       
-      
-      if (!selectedRoutine.id) return ToastAndroid.show("Selecciona una rutina primero", ToastAndroid.SHORT);
-
+    
+      if (!selectedRoutine) return ToastAndroid.show("Selecciona una rutina primero", ToastAndroid.SHORT);
 
       router.push(
       {
@@ -213,7 +242,6 @@ try {
         nombre:selectedRoutine?.nombre,
         Ejercicios: selectedRoutine?.Ejercicios,
         id:selectedRoutine?.id
-        
       }
     })
   }}
