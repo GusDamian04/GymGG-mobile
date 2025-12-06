@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Pressable, Modal } from "react-native";
+import React, { useEffect, useState,useRef } from "react";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Pressable, Modal,Animated } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet } from "react-native";
@@ -7,38 +7,88 @@ import { useRouter } from "expo-router";
 import { createRoutineEndPoint } from "../services/routines";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getExercises } from "../services/exercises";
 
 
 export default function CreateRoutine () {
     
-          const router = useRouter()
+  const fadeAnim = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start()
+  }, [])
+
+ const router = useRouter()
     
     
   const [routineName, setRoutineName] = useState("");
   const [routineDes, setRoutineDes] = useState("");
   const [selectedPart, setSelectedPart] = useState<string | null>(null);
-  const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
 
-    const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const[exercise, setExercise]= useState<any>();
+  const [loading, setLoading] = useState(true);
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const toggleSelect = (id:string) => {
+  if (selectedIds.includes(id)) {
+    // quitar si ya estaba seleccionado
+    setSelectedIds(selectedIds.filter(item => item !== id));
+  } else {
+    setSelectedIds([...selectedIds, id]);
+    console.log(selectedIds)
+  }
+};
+
+  useEffect(()=> {
+    const loadExer = async () => {
+      try {
+        const data = await getExercises();
+
+        const mapped= data.map((item:any)=> ({
+          id: item.id,
+          condicion:item.Health_condition,
+          nombre:item.name,
+          descipcion:item.description,
+          repeticiones:item.repetitions,
+          series:item.series,
+          tipo:item.muscle_group
+
+        }))
+        setExercise(mapped)
+        console.log("cargue ejerjcicios",mapped)
+
+      } catch(error){
+        console.log("error cargando ejerciios",error);
+      }finally{
+        setLoading(false);
+      }
+    };
+    loadExer();
+  },[]);
+
+  if (loading) {
+        return <Text>Cargando...</Text>;
+    }
 
 const handleCreateRoutine = async () => {
-  
   const stored = await AsyncStorage.getItem("user_id");
-  console.log("ID del usuario:", stored);
-
-    console.log("descripcion",routineDes)
-
     try {
         const nuevaRutina = {
             Routine_name: routineName,
             Description: routineDes,
-            user:stored
+            user:stored,
+            exercises:selectedIds,
+            Last_time_done: new Date().toISOString(), 
             
         };
-
+        console.log(selectedIds)
         const response = await createRoutineEndPoint(nuevaRutina);
-
         console.log("Rutina creada:", response);
     } catch (error) {
         console.log("Error creando rutina:", error);
@@ -46,30 +96,24 @@ const handleCreateRoutine = async () => {
 };
 
 
-      const parts = ["Brazo", "Pierna", "Pantorrilla"];
+const filteredExercises = selectedPart
+  ? exercise.filter((e: any) => 
+      e.tipo.toLowerCase() === selectedPart.toLowerCase()
+    )
+  : [];
 
-  // Ejercicios locales por categoría
-const rutina: Record<string, { nombre: string; series: string }[]> = {
-};
 
-  const toggleExercise = (exercise: string) => {
-    if (selectedExercises.includes(exercise)) {
-      setSelectedExercises(selectedExercises.filter((e) => e !== exercise));
-    } else {
-      setSelectedExercises([...selectedExercises, exercise]);
-    }
-  };
 
+      const parts = ["Brazos", "Piernas", "Pantorrilla"];
+
+  // Ejercicios locales por categorí
   return (
     <LinearGradient colors={["#0A0A0A", "#1A1A1A"]} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: 25, paddingBottom: 140 }}>
         
-      
-
-
        <View style={styles.header}>
               <TouchableOpacity
-                onPress={() => router.replace("/screens/home-screen")}
+                onPress={() => router.replace("/screens/my-routines1")}
                 activeOpacity={0.8}
                 style={styles.backButton}
               >
@@ -101,8 +145,11 @@ const rutina: Record<string, { nombre: string; series: string }[]> = {
         <Text style={styles.label}>¿Qué parte del cuerpo entrenaras?</Text>
 
           {/* Botón que abre el dropdown */}
-      <Pressable style={styles.selectBox} onPress={() => setIsOpen(true)}>
+      <Pressable style={styles.selectBox} 
+      onPress={() => setIsOpen(true)}
+      >
         <Text style={styles.selectText}>
+
           {selectedPart
             ? selectedPart.charAt(0).toUpperCase() + selectedPart.slice(1)
             : "Seleccionar..."}
@@ -110,75 +157,82 @@ const rutina: Record<string, { nombre: string; series: string }[]> = {
       </Pressable>
 
             <Modal visible={isOpen} transparent animationType="fade">
-        <Pressable style={styles.overlay} onPress={() => setIsOpen(false)}>
-    <View style={styles.dropdownContainer}>
-  {parts.length === 0 ? (
-    <Text style={styles.optionText}>No hay ejercicios para mostrar</Text>
-  ) : (
-    parts.map((item) => (
-    <Text style={styles.optionText}>No hay categorias </Text>
-      // <TouchableOpacity
-      //   key={item}
-      //   style={styles.option}
-      //   onPress={() => {
-      //     setSelectedPart(item);
-      //     setIsOpen(false);
-      //   }}
-      // >
-      //   <Text style={styles.optionText}>
-      //     {item.charAt(0).toUpperCase() + item.slice(1)}
-      //   </Text>
-      // </TouchableOpacity>
-    ))
-  )}
-</View>
-        </Pressable>
+        <Pressable style={styles.overlay}
+         onPress={() => setIsOpen(false)}
+         >
+        <View style={styles.dropdownContainer}>
+            {parts.map((item,index) => (
+              <Pressable
+              key={index}
+              style={styles.exerciseItem}
+              onPress={()=>{
+                setSelectedPart(item)
+                setIsOpen(false)
+              }}
+              >
+                <Text style={{color:"#fff"}}> {item}</Text>
+              </Pressable>
+            ))}
+        </View>
+      </Pressable>
       </Modal>
 
-        {/* Ejercicios */}
-        {selectedPart && (
-          <>
             <Text style={[styles.label, { marginTop: 20 }]}>
               Ejercicios disponibles
+            
             </Text>
 
-      <ScrollView style={styles.exerciseScroll} contentContainerStyle={styles.exerciseScrollContent}>
-  {rutina[selectedPart].map((exercise) => {
-  const isSelected = selectedExercises.includes(exercise.nombre);
+{!selectedPart && (
+  <Text style={{ color: "#aaa", marginBottom: 10 }}>
+    Selecciona una parte del cuerpo para ver ejercicios disponibles.
+  </Text>
+)}
+<ScrollView
+  style={styles.exerciseScroll}
+  nestedScrollEnabled={true}
+  contentContainerStyle={styles.exerciseScrollContent}
+>
+  {selectedPart ? (
+    filteredExercises.length > 0 ? (
+      filteredExercises.map((ejercicio: any) => {
+        const isSelected = selectedIds.includes(ejercicio.id);
 
-  return (
-    <TouchableOpacity
-      key={exercise.nombre}
-      onPress={() => toggleExercise(exercise.nombre)}
-      style={[
-        styles.exerciseItem,
-        isSelected && styles.exerciseItemSelected,
-      ]}
-    >
-      <Text
-        style={[
-          styles.exerciseText,
-          isSelected && styles.exerciseTextSelected,
-        ]}
-      >
-        {exercise.nombre}
+        return (
+          <TouchableOpacity
+            key={ejercicio.id}
+            onPress={() => toggleSelect(ejercicio.id)}
+            style={[
+              styles.exerciseItem,
+              isSelected && styles.exerciseItemSelected,
+            ]}
+          >
+            <Text
+              style={[
+                styles.exerciseText,
+                isSelected && styles.exerciseTextSelected,
+              ]}
+            >
+              {ejercicio.nombre}
+            </Text>
+
+            <Text style={styles.seriesText}>
+              {ejercicio.series} series × {ejercicio.repeticiones} reps
+            </Text>
+          </TouchableOpacity>
+        );
+      })
+    ) : (
+      <Text style={{ color: "#aaa", marginTop: 20 }}>
+        No hay ejercicios para esta parte.
       </Text>
-      <Text style={styles.seriesText}>
-        {exercise.series}
-      </Text>
-    </TouchableOpacity>
-  );
-})}
+    )
+  ) : null}
 </ScrollView>
-          </>
-        )}
-
       </ScrollView>
 
       {/* Botón fijo abajo */}
       <TouchableOpacity 
       onPress={()=> {
-
           if (!routineName) {
       alert("Escribe un nombre para la rutina");
       return;
@@ -189,14 +243,10 @@ const rutina: Record<string, { nombre: string; series: string }[]> = {
    if (!selectedPart) {
       alert("En modo dev: viendo el flujo de paginas, iras a my rutinas");
        handleCreateRoutine();  
-                   router.replace('/screens/my-routines1')
-  
-    
-            
+                   router.replace('/screens/my-routines1')      
       return;
     }
-
-        if (selectedExercises.length === 0) {
+        if (selectedIds.length === 0) {
       alert("Selecciona al menos un ejercicio");
       return;
     }
@@ -262,19 +312,15 @@ const styles = StyleSheet.create({
 exerciseScroll: {
   maxHeight: 350,              // ajusta el alto del scroll
   borderRadius: 10,
-
   paddingHorizontal: 6,
 },
 exerciseScrollContent: {
   paddingVertical: 8,
 },
-
-
 exerciseItemSelected: {
   backgroundColor: "#4d4d50",
   borderColor: "#fdd835",      // borde dorado al seleccionar
 },
-
 exerciseText: {
   fontSize: 16,
   color: "#e6e6e6",
@@ -394,7 +440,7 @@ optionText: {
   },
   seriesText: {
   fontSize: 14,
-  color: "#666",
+  color: "#757575",
   marginTop: 2,
 }
 });
