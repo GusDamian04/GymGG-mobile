@@ -5,41 +5,62 @@ import * as Progress from "react-native-progress"; // arriba de todo, junto con 
 import { Dimensions } from "react-native"; // nuevo import
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { getExercisesByIds } from "../services/exercises";
 
 
 
 export default function RoutineProgressScreen() {
-  const { nombre,Ejercicios, id } = useLocalSearchParams();
+  
+  const router = useRouter();
+  
+  const { nombre,ejercios, id,cantidad } = useLocalSearchParams();
+
+  const cantidadNum= Number(cantidad);
+  const cantidadStr = Array.isArray(ejercios) ? ejercios[0] : ejercios;
 
 
-  const ejer = Ejercicios;
+
+  
+// 2. Convertir string a array de números
+const exerciseIds: number[] = cantidadStr
+  ? cantidadStr.split(",").map((id) => Number(id))
+  : [];
 
 
-const screenWidth = Dimensions.get("window").width - 40; // 40 es el padding del ScrollView
+  const screenWidth = Dimensions.get("window").width - 40; // 40 es el padding del ScrollView
+  //controlador de barra general en base a a ejercicios 
+
+
+  const [generalProgress, setGeneralProgress] = useState(1/cantidadNum);
+  const [generalBar, setGeneralBar] = useState(1);
+  
+
+
+  //controlador de barra se serie actual
   const [progress, setProgress] = useState(0); // estado inicial de la barra (0%)
-const seriesTotales = 5; // o pásalo por params
+  const [serieActual, setSerieActual] = useState(0);
 
-  const [serieActual, setSerieActual] = useState(0); 
 
+  const [serieMostrar, setSerieMostrar] = useState(1);
+
+  const [ejercicios,setEjercicio] = useState<any>();
+
+
+  const [tiempoTrans, setTiempoTrans]= useState(0);
   
 
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [totalTime, setTotalTime] = useState<number>(0); // en segundos
   const [restTime, setRestTime] = useState<number>(10 * 60); // 10 minutos en segundos
 
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const [loading, setLoading] = useState(true);
+
+
+
   const totalIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-
-const increaseProgress = () => {
-  if (serieActual < seriesTotales) {
-    const nextSerie = serieActual + 1;
-
-    setSerieActual(nextSerie);
-
-    setProgress(nextSerie / seriesTotales); // esto llena proporcionalmente
-  }
-};
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 const formatTime = (secs:number) => {
   const m = Math.floor(secs / 60).toString().padStart(2, "0");
@@ -48,10 +69,8 @@ const formatTime = (secs:number) => {
 };
 
 
-
-
 useEffect(() => {
-  if (!isPaused) return; // si no está descansando, NO hace nada
+  if (!isPaused) return; 
 
   intervalRef.current = setInterval(() => {
     setRestTime(prev => {
@@ -70,6 +89,39 @@ useEffect(() => {
   };
 }, [isPaused]);
 
+useEffect(() => {
+  async function loadExercises() {
+    try {
+      const exercises = await getExercisesByIds(exerciseIds);
+      setEjercicio(exercises);
+      setLoading(false);
+      console.log("carque",exercises)
+    } catch (error) {
+      console.log(error);
+    }
+  }+
+  loadExercises();
+}, []);
+
+const series=ejercicios?.[currentIndex]?.series;
+const increaseProgress = () => {
+  if (serieActual < series) {
+    const nextSerie = serieActual + 1;
+
+    setSerieActual(nextSerie);
+    setProgress(nextSerie / series); // esto llena proporcionalmente
+  }
+};
+
+const increaseGeneralProgress= () => {
+  if(generalBar<cantidadNum){
+    const siguenteEjer= generalBar+1;
+
+    setGeneralBar(siguenteEjer)
+    setGeneralProgress(siguenteEjer/cantidadNum);
+
+  }
+}
 
 useEffect(() => {
   totalIntervalRef.current = setInterval(() => {
@@ -93,11 +145,6 @@ useEffect(() => {
   };
 }, []);
 
-      const router = useRouter();
-    
-  const [loading, setLoading] = useState(true);
-
-
 
   useEffect(() => {
     // Simulación de carga de datos
@@ -113,6 +160,9 @@ useEffect(() => {
       </View>
     );
   }
+  const seriestotales= ejercicios?.[currentIndex].series;
+  const seriecompleta=serieActual==seriestotales;
+
 
   return (
     <View style={{flex:1, marginBottom:0, }}>
@@ -135,10 +185,11 @@ useEffect(() => {
         <View style={styles.progressLabelsRow}>
 
         <Text style={styles.progressLabel}>Progreso general</Text>
-        <Text style={styles.progressLabel}> 1/{ejer}</Text>
+        <Text style={styles.progressLabel}> {generalBar}/{cantidadNum}</Text>
         </View>
+
   <Progress.Bar
-    progress={0.25}           // porcentaje de progreso (0 a 1)
+    progress={generalProgress}           // porcentaje de progreso (0 a 1)
     width={screenWidth}             // se adapta al ancho del contenedor
     height={10}              // altura de la barra
     borderRadius={12}        // bordes redondeados
@@ -153,7 +204,7 @@ useEffect(() => {
         <View style={styles.progressLabelsRow}>
 
         <Text style={styles.progressLabel}>serie actual</Text>
-        <Text style={styles.progressLabel}> {serieActual}/{seriesTotales}</Text>
+        <Text style={styles.progressLabel}> {serieActual}/{ejercicios?.[currentIndex]?.series}</Text>
         </View>
   <Progress.Bar
     progress={progress}           // porcentaje de progreso (0 a 1)
@@ -191,38 +242,71 @@ useEffect(() => {
 
     
 <View style={styles.timerCard2}>
-  <Text style={styles.serieTitle}>Serie 1</Text>
-  <Text style={styles.exerciseName}>Flexiones de pecho</Text>
-  <Text style={styles.repsText}>{seriesTotales} series x 12-15 reps</Text>
+  <Text style={styles.serieTitle}>Serie {serieMostrar}</Text>
+  <Text style={styles.exerciseName}>
+  {ejercicios?.[currentIndex]?.name || "cargando ejercicio"}
+    </Text>
+  <Text style={styles.repsText}>{ejercicios?.[currentIndex].series} series x {ejercicios?.[currentIndex]?.repetitions} reps</Text>
 </View>
-
-
-
     </ScrollView>
+
 <View style={styles.fixedButtonContainer}>
-
-
  <TouchableOpacity
     style={styles.fixedButton}
-    onPress={() => {increaseProgress()}}
+    onPress={() => {increaseProgress();
+      if(serieMostrar<ejercicios?.[currentIndex].series){
+  setSerieMostrar(serieMostrar+1)
+}
+    }}
     activeOpacity={0.9}
 >
-
     <LinearGradient
-        colors={['#FFD369', '#FF9A00']} // Amarillo → Naranja
+        colors={
+          seriecompleta
+          ? ['#4CAF50', '#2E7D32'] 
+          : ['#FFD369', '#FF9A00'] 
+        } // Amarillo → Naranja
         style={styles.gradient}
     >
         <Text style={styles.createButtonText}>
-            ✓ Completar Serie 1 
+            ✓ {seriecompleta? "Series Completas":`Completar Serie ${serieMostrar}`}
         </Text>
-
-      
     </LinearGradient>
 </TouchableOpacity>
 
+
+
   <TouchableOpacity
       style={styles.nextButton}
-      onPress={() =>{}}
+      onPress={() =>{
+ if(seriecompleta){
+if(currentIndex < ejercicios.length -1 ){
+  console.log("esoy aqui")
+  setCurrentIndex(currentIndex+1);
+  setSerieActual(0)
+  setProgress(0);
+  setSerieMostrar(1);
+  increaseGeneralProgress()
+  
+} else{
+  alert("¡Has terminado la rutina!")
+  
+  router.push({
+    pathname:"/screens/training-complete",
+    params:{
+      TiempoTrans:totalTime
+    }
+  })
+  
+}
+ }else{
+alert("completa las Series")
+ }
+
+
+
+
+      }}
       activeOpacity={0.9}
   >
       <Text style={styles.nextButtonText}>Siguiente</Text>
@@ -232,11 +316,8 @@ useEffect(() => {
           color="#FFD700"
       />
   </TouchableOpacity>
-
 </View>
-
     </View>
-    
   );
 }
 
@@ -376,19 +457,19 @@ timerIcon2: {
   color: "#fff" // amarillo
 },
 serieTitle: {
-  fontSize: 24,
+  fontSize: 28,
   fontWeight: "bold",
   color: "#FFD700", // amarillo
   marginBottom: 8
 },
 exerciseName: {
-  fontSize: 18,
+  fontSize: 20,
   fontWeight: "500",
   color: "#fff",
   marginBottom: 5
 },
 repsText: {
-  fontSize: 14,
+  fontSize: 16,
   color: "#ccc" // gris claro para detalle
 },
    gradient: {

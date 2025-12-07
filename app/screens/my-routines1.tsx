@@ -70,9 +70,9 @@ function tiempoTranscurrido(fechaISO: string): string {
                    icono:item.icono ?? "fitness",
                   ultimaVez:tiempoTranscurrido(item.Last_time_done),
                   vecesCompletada:item.Times_done,
-
+                  ejercicios:item.exercises
                 }))
-                console.log(mapped[0].ultimaVez)
+                console.log(mapped[2].ejercicios)
                 setRoutine(mapped);  
                 
                                 if(data.length>0){
@@ -191,6 +191,8 @@ try {
     key={rutina.id}
     onPress={() => {setSelectedRoutineId(rutina.id);
    setSelectedRoutine(rutina)
+   console.log("ejercios",rutina.ejercicios.length)
+   console.log("ejercios lsita",rutina.ejercicios)
     }
 
     }
@@ -234,14 +236,15 @@ try {
       
     
       if (!selectedRoutine) return ToastAndroid.show("Selecciona una rutina primero", ToastAndroid.SHORT);
-
       router.push(
       {
       pathname:"/screens/routineProgress",
       params:{
+        id:selectedRoutine?.id,
         nombre:selectedRoutine?.nombre,
-        Ejercicios: selectedRoutine?.Ejercicios,
-        id:selectedRoutine?.id
+        ejercios:selectedRoutine?.ejercicios,
+        cantidad:selectedRoutine.ejercicios.length
+        
       }
     })
   }}

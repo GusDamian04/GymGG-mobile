@@ -12,3 +12,16 @@ try {
         throw new Error("No se pudo cargar los ejercicios");
     }
 }
+
+export async function getExercisesByIds(ids:number[]){
+    try{
+    const response = await api.post(`${API_URL}/routines/exercises/by_ids/`, {
+        ids,
+    });
+        return response.data;
+
+    }catch(error:any){
+    console.log("Error al obtener ejercicios por IDs:", error.response?.data || error);
+    throw new Error("No se pudieron cargar los ejercicios por IDs");
+    }
+}
