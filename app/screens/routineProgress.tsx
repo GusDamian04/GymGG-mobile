@@ -290,6 +290,7 @@ if(currentIndex < ejercicios.length -1 ){
 }
  }else{
 alert("completa las Series")
+//existo
  }
 
 

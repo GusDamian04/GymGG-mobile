@@ -302,7 +302,7 @@ export default function HomeScreen() {
                                     title="Progreso"
                                     subtitle="Analiza tu historial"
                                     color="#2196F3"
-                                    onPress={()=> router.replace("/screens/history")}
+                                    onPress={()=> router.replace("/screens/training-complete")}
                                 />
                             </View>
                         </View>
