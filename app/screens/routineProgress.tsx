@@ -44,6 +44,9 @@ const exerciseIds: number[] = cantidadStr
   const [serieMostrar, setSerieMostrar] = useState(1);
 
   const [ejercicios,setEjercicio] = useState<any>();
+
+
+  const [tiempoTrans, setTiempoTrans]= useState(0);
   
 
   const [isPaused, setIsPaused] = useState<boolean>(false);
@@ -287,10 +290,17 @@ if(currentIndex < ejercicios.length -1 ){
   
 } else{
   alert("¡Has terminado la rutina!")
+  
+  router.push({
+    pathname:"/screens/training-complete",
+    params:{
+      TiempoTrans:totalTime
+    }
+  })
+  
 }
  }else{
 alert("completa las Series")
-//existo
  }
 
 

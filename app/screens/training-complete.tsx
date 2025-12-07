@@ -2,10 +2,20 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 
 
 export default function CompletedRoutine() {
+    const {TiempoTrans} =useLocalSearchParams()
+
+    const tiempo=Number(TiempoTrans)
+
+    const formatTime = (secs:number) => {
+  const m = Math.floor(secs / 60).toString().padStart(2, "0");
+  const s = (secs % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+};
+
 
   const router=useRouter();
   return (
@@ -33,7 +43,7 @@ export default function CompletedRoutine() {
 
           {/* DERECHA */}
           <View style={styles.rightColumn}>
-            <Text style={styles.rightText}>45:10 min</Text>
+            <Text style={styles.rightText}>{formatTime(tiempo)}</Text>
             <Text style={styles.rightText}>7:10 min</Text>
             <Text style={styles.rightText}>12</Text>
             <Text style={styles.rightText}>5</Text>
