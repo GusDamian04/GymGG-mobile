@@ -74,7 +74,7 @@ function tiempoTranscurrido(fechaISO: string): string {
                   vecesCompletada:item.Times_done,
                   ejercicios:item.exercises
                 }))
-                console.log(mapped[2].ejercicios)
+                console.log("lista de ejer",mapped[2].ejercicios.length)
                 setRoutine(mapped);  
                 
                                 if(data.length>0){
@@ -165,8 +165,6 @@ function tiempoTranscurrido(fechaISO: string): string {
         )}
 
 
-
-
       
              {
               !loading && rutine.length===0 ? (
@@ -192,7 +190,9 @@ function tiempoTranscurrido(fechaISO: string): string {
             ]}
           >
             <View style={styles.routineContent}>
-              <View style={styles.routineIconContainer}>
+              <View style={[styles.routineIconContainer,
+                selectedRoutineId===rutina.id && styles.routineIconContainerSelected
+              ]}>
                 <Ionicons name={rutina.icono} size={28} color="#FFC107" />
               </View>
           
@@ -205,6 +205,7 @@ function tiempoTranscurrido(fechaISO: string): string {
                 </View>
           
                 <View style={styles.routineFooter}>
+                  <Text style={styles.routineDuration}>{rutina.ejercicios.length} {rutina.ejercicios.length===1 ?"ejercicio":"ejercicios"}</Text>
                   <Text style={styles.routineDuration}>{rutina.duracion}</Text>
                   <View style={styles.routineStats}>
                     <Text style={styles.routineStatText}>✓ {rutina.vecesCompletada} veces</Text>
@@ -219,7 +220,6 @@ function tiempoTranscurrido(fechaISO: string): string {
        )
      }
               
-
             </View>
             </ScrollView>
             <TouchableOpacity
@@ -235,7 +235,8 @@ function tiempoTranscurrido(fechaISO: string): string {
         id:selectedRoutine?.id,
         nombre:selectedRoutine?.nombre,
         ejercios:selectedRoutine?.ejercicios,
-        cantidad:selectedRoutine.ejercicios.length
+        cantidad:selectedRoutine.ejercicios.length,
+        vecesHecha:selectedRoutine.vecesCompletada
         
       }
     })
@@ -355,6 +356,14 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     backgroundColor: '#2A2A2A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  routineIconContainerSelected: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#454545',
     justifyContent: 'center',
     alignItems: 'center',
   },

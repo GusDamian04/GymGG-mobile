@@ -85,21 +85,21 @@ useEffect(() => {
 
 
 const totales: Record<string, Record<string, number>> = {};
-if(historialDate){
 
+if(historialDate){
   
   Object.entries(historialDate).forEach(([mes, semanas]: any) => {
     totales[mes] = {};  // Crear entrada del mes
     
     Object.entries(semanas).forEach(([semana, items]: any) => {
       totales[mes][semana] = items.reduce(
-        (acc: number, rutina: any) => acc + rutina.Time_to_done,
+        (acc: number, rutina: any) => acc +  Math.round(rutina.Time_to_done / 60),
         0
       );
     });
   });
+  
 }
-
 const mesesConDatos = Object.entries(totales).filter(([mes, semanas]) =>
   Object.values(semanas).some((valor: number) => valor > 0)
 );

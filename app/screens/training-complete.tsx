@@ -4,13 +4,21 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { createRoutineHistoryData, updateRoutine } from "../services/routines";
+import { ToastAndroid } from "react-native";
 
 
 export default function CompletedRoutine() {
-    const {TiempoTrans,idRoutine} =useLocalSearchParams()
+    const {TiempoTrans,idRoutine,veceshecho,tiempodescansado} =useLocalSearchParams()
 
     const [loading, setLoading] = useState(false);
+    const descansototal= 600;
+    const sobrante=Number(tiempodescansado);
+    const descansado= descansototal-sobrante
 
+
+
+
+    const veces=Number(veceshecho)
     const tiempo=Number(TiempoTrans)
 
     const formatTime = (secs:number) => {
@@ -20,23 +28,27 @@ export default function CompletedRoutine() {
 };
 
 
+
   const handleUpdateRoutine = async () => {
     try{
       setLoading(true)
+      //actualiza la rutina
       const rutinaActualizada= {
          Last_time_done :new Date().toISOString(), //(es del dateTimefield de djnago)
-          Times_done: 5// integer
+          Times_done: veces+1// integer
       };
         await updateRoutine(Number(idRoutine), rutinaActualizada);
 
+
+        //crea un registro del historial, no confundir nombres
           const Historialrutina= {
          routine :Number(idRoutine) ,
         Date_realization: new Date().toISOString(),
-          Time_to_done:tiempo
+          Time_to_done:tiempo,
+          
       };
       await createRoutineHistoryData(Historialrutina);
-
-      alert(" guarde historial y actualize")
+      ToastAndroid.show("Se guardaron registro de rutina",ToastAndroid.SHORT)
 
         router.push("/screens/home-screen")
     } catch (error){
@@ -75,16 +87,14 @@ export default function CompletedRoutine() {
           <View style={styles.leftColumn}>
             <Text style={styles.leftText}>Duración total</Text>
             <Text style={styles.leftText}>Tiempo descansado</Text>
-            <Text style={styles.leftText}>Series completas</Text>
-            <Text style={styles.leftText}>Ejercicios hechos</Text>
+
           </View>
 
           {/* DERECHA */}
           <View style={styles.rightColumn}>
             <Text style={styles.rightText}>{formatTime(tiempo)}</Text>
-            <Text style={styles.rightText}>7:10 min</Text>
-            <Text style={styles.rightText}>12</Text>
-            <Text style={styles.rightText}>5</Text>
+            <Text style={styles.rightText}>{formatTime(descansado)}</Text>
+
           </View>
 
         </View>

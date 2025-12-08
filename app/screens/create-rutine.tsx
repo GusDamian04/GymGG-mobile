@@ -6,6 +6,8 @@ import { StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { createRoutineEndPoint } from "../services/routines";
 import { ActivityIndicator } from "react-native";
+import { ToastAndroid } from "react-native";
+
 
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -192,8 +194,8 @@ const filteredExercises = selectedPart
   </Text>
 )}
 <ScrollView
-  style={styles.exerciseScroll}
   nestedScrollEnabled={true}
+  style={styles.exerciseScroll}
   contentContainerStyle={styles.exerciseScrollContent}
 >
   {selectedPart ? (
@@ -256,8 +258,8 @@ const filteredExercises = selectedPart
     }
 
      handleCreateRoutine();
-  
-            router.replace('/screens/my-routines1')
+     router.replace('/screens/my-routines1')
+     ToastAndroid.show(`Se ha guardado tu rutina con ${selectedIds.length} ejercicios`, ToastAndroid.LONG);
       }}
       
       style={styles.fixedButton} activeOpacity={0.9}>
