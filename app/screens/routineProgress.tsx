@@ -13,14 +13,13 @@ export default function RoutineProgressScreen() {
   
   const router = useRouter();
   
-  const { nombre,ejercios, id,cantidad } = useLocalSearchParams();
+  const { nombre,ejercios, id,cantidad,vecesHecha } = useLocalSearchParams();
+
+
 
   const cantidadNum= Number(cantidad);
   const cantidadStr = Array.isArray(ejercios) ? ejercios[0] : ejercios;
 
-
-
-  
 // 2. Convertir string a array de números
 const exerciseIds: number[] = cantidadStr
   ? cantidadStr.split(",").map((id) => Number(id))
@@ -46,7 +45,6 @@ const exerciseIds: number[] = cantidadStr
   const [ejercicios,setEjercicio] = useState<any>();
 
 
-  const [tiempoTrans, setTiempoTrans]= useState(0);
   
 
   const [isPaused, setIsPaused] = useState<boolean>(false);
@@ -99,7 +97,7 @@ useEffect(() => {
     } catch (error) {
       console.log(error);
     }
-  }+
+  }
   loadExercises();
 }, []);
 
@@ -240,14 +238,47 @@ useEffect(() => {
 </View>
 
 
-    
-<View style={styles.timerCard2}>
+<ScrollView
+horizontal
+pagingEnabled
+showsHorizontalScrollIndicator={false}
+style={{width:"100%"}}
+>
+
+<LinearGradient
+  colors={["#2b2b2b", "#1a1a1a"]} // degrade moderno gris → negro
+  start={{ x: 0, y: 0 }}
+  end={{ x: 1, y: 1 }}
+  style={styles.timerCard2}
+ 
+>
+<View style={styles.innerContent2}>
   <Text style={styles.serieTitle}>Serie {serieMostrar}</Text>
   <Text style={styles.exerciseName}>
   {ejercicios?.[currentIndex]?.name || "cargando ejercicio"}
     </Text>
   <Text style={styles.repsText}>{ejercicios?.[currentIndex].series} series x {ejercicios?.[currentIndex]?.repetitions} reps</Text>
 </View>
+</LinearGradient>
+
+<LinearGradient
+  colors={["#2b2b2b", "#1a1a1a"]} // degrade moderno gris → negro
+  start={{ x: 0, y: 0 }}
+  end={{ x: 1, y: 1 }}
+  style={styles.timerCard2}
+>
+
+<View style={styles.innerContent}>
+    <Text style={styles.repsText}> Descripcion:</Text>
+
+  <Text style={styles.exerciseName2} numberOfLines={0}>
+  {ejercicios?.[currentIndex]?.description || "cargando descripcion"}
+    </Text>
+</View>
+</LinearGradient>
+
+
+</ScrollView>
     </ScrollView>
 
 <View style={styles.fixedButtonContainer}>
@@ -289,12 +320,15 @@ if(currentIndex < ejercicios.length -1 ){
   increaseGeneralProgress()
   
 } else{
-  alert("¡Has terminado la rutina!")
+    console.log("el resto de timpoe",restTime)
   
   router.push({
     pathname:"/screens/training-complete",
     params:{
-      TiempoTrans:totalTime
+      TiempoTrans:totalTime,
+      idRoutine:id,
+      veceshecho:vecesHecha,
+      tiempodescansado:restTime
     }
   })
   
@@ -426,16 +460,34 @@ timerCard: {
   alignItems: "center"
 },
 timerCard2: {
+  width: Dimensions.get("window").width * 0.85, //  clave para romper línea
   marginTop: 30,
-  backgroundColor: "#3a3a3a", // gris oscuro
+  backgroundColor: "transparent",
+  overflow: "hidden",     
   borderRadius: 15,
-  borderColor:"#FFD700",
+  borderColor: "rgba(255, 215, 0, 0.7)", 
   borderWidth:1,
   padding: 20,
   height:200,
-
+  marginLeft:10,
+  marginRight:10,
   justifyContent: "space-between",
   alignItems: "center"
+},
+innerContent: {
+  width: Dimensions.get("window").width * 0.85, //  clave para romper línea
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+innerContent2: {
+
+  padding: 20,
+  height:"100%",
+  marginLeft:10,
+  marginRight:10,
+    width: Dimensions.get("window").width * 0.85, //  clave para romper línea
+  justifyContent: "space-between",
+  alignItems: "center",
 },
 timerSection: {
   alignItems: "center",
@@ -466,7 +518,19 @@ exerciseName: {
   fontSize: 20,
   fontWeight: "500",
   color: "#fff",
-  marginBottom: 5
+  marginBottom: 5,
+},
+exerciseName2: {
+  textAlign:"center",
+ 
+  fontSize: 20,
+  fontWeight: "500",
+  color: "#fff",
+  marginBottom: 5,
+   flexShrink: 1,     // <-- evita que el texto trate de ir en una sola línea
+  flexWrap: "wrap",  // <-- fuerza salto de línea
+  width: "100%",  
+  paddingBottom:20
 },
 repsText: {
   fontSize: 16,

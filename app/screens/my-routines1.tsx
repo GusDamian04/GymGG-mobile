@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ToastAndroid } from "react-native";
 import { getAllRoutines } from '../services/routines'
+import { ActivityIndicator } from "react-native";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
@@ -55,7 +57,7 @@ function tiempoTranscurrido(fechaISO: string): string {
     }).start()
   }, [])
 
-  const [rutine,setRoutine]= useState<any>(null);
+  const [rutine,setRoutine]= useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -72,7 +74,7 @@ function tiempoTranscurrido(fechaISO: string): string {
                   vecesCompletada:item.Times_done,
                   ejercicios:item.exercises
                 }))
-                console.log(mapped[2].ejercicios)
+                console.log("lista de ejer",mapped[2].ejercicios.length)
                 setRoutine(mapped);  
                 
                                 if(data.length>0){
@@ -91,9 +93,6 @@ function tiempoTranscurrido(fechaISO: string): string {
         loadRoutine();
     }, []); //  solo al montar el componente
 
-   if (loading) {
-        return <Text>Cargando...</Text>;
-    }
 
   // const confirmDelete = () => {
   //   // Aquí iría la lógica para eliminar la rutina
@@ -102,24 +101,7 @@ function tiempoTranscurrido(fechaISO: string): string {
  
   // }
 
-try {
-  // Validar primero si el ID existe
-  if (!selectedRoutineId) {
-  
-  }
-  // Buscar la rutina por ID
-  // selectedRoutine = rutinasGuardadas.find(r => r.id === selectedRoutineId);
 
-
-} catch (error: any) {
-  console.error("Error al obtener la rutina seleccionada:", error.message);
-
-  ToastAndroid.show(
-    error.message || "Error inesperado",
-    ToastAndroid.SHORT
-  );
-
-}
 
   return (
     <LinearGradient colors={["#0D0D0D", "#1C1C1C"]} style={styles.container}>
@@ -173,61 +155,71 @@ try {
 
               
             <View style={styles.routinesList}>
-        
 
+        {loading && (
+                     <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#FFD369" />
+              <Text style={{ color: "#FFF", marginTop: 10 }}>Cargando rutinas</Text>
+            </View>
               
-              {
+        )}
+
+
+      
+             {
+              !loading && rutine.length===0 ? (
+                <Text style={styles.emptyText}>
+                   Aun no hay rutinas disponibles
+                 </Text>  
+               ): (
+                 
+                 rutine.map((rutina) => (
+          <TouchableOpacity
+            key={rutina.id}
+            onPress={() => {setSelectedRoutineId(rutina.id);
+            setSelectedRoutine(rutina)
+            console.log("ejercios",rutina.ejercicios.length)
+            console.log("ejercios lsita",rutina.ejercicios)
+            }
+          
+            }
+            activeOpacity={0.8}
+            style={[
+              styles.routineCard,
+              selectedRoutineId === rutina.id && styles.routineCardSelected
+            ]}
+          >
+            <View style={styles.routineContent}>
+              <View style={[styles.routineIconContainer,
+                selectedRoutineId===rutina.id && styles.routineIconContainerSelected
+              ]}>
+                <Ionicons name={rutina.icono} size={28} color="#FFC107" />
+              </View>
+          
+              <View style={styles.routineInfo}>
+                <View style={styles.routineHeader}>
+                  <View style={styles.routineTitleContainer}>
+                    <Text style={styles.routineName}>{rutina.nombre}</Text>
+                    <Text style={styles.routineDescription}>{rutina.descripcion}</Text>
+                  </View>
+                </View>
+          
+                <View style={styles.routineFooter}>
+                  <Text style={styles.routineDuration}>{rutina.ejercicios.length} {rutina.ejercicios.length===1 ?"ejercicio":"ejercicios"}</Text>
+                  <Text style={styles.routineDuration}>{rutina.duracion}</Text>
+                  <View style={styles.routineStats}>
+                    <Text style={styles.routineStatText}>✓ {rutina.vecesCompletada} veces</Text>
+                    <Text style={styles.routineStatText}>{rutina.ultimaVez}</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+          )
+        )
+       )
+     }
               
-  //             rutine.length===0 ?(
-  //                <Text style={{ textAlign: "center", marginTop: 20 }}>
-  //   No hay rutinas disponibles
-  // </Text>
-  //             ):(
-                
-              
-              
-              rutine.map((rutina) => (
-  <TouchableOpacity
-    key={rutina.id}
-    onPress={() => {setSelectedRoutineId(rutina.id);
-   setSelectedRoutine(rutina)
-   console.log("ejercios",rutina.ejercicios.length)
-   console.log("ejercios lsita",rutina.ejercicios)
-    }
-
-    }
-    activeOpacity={0.8}
-    style={[
-      styles.routineCard,
-      selectedRoutineId === rutina.id && styles.routineCardSelected
-    ]}
-  >
-    <View style={styles.routineContent}>
-      <View style={styles.routineIconContainer}>
-        <Ionicons name={rutina.icono} size={28} color="#FFC107" />
-      </View>
-
-      <View style={styles.routineInfo}>
-        <View style={styles.routineHeader}>
-          <View style={styles.routineTitleContainer}>
-            <Text style={styles.routineName}>{rutina.nombre}</Text>
-            <Text style={styles.routineDescription}>{rutina.descripcion}</Text>
-          </View>
-        </View>
-
-        <View style={styles.routineFooter}>
-          <Text style={styles.routineDuration}>{rutina.duracion}</Text>
-          <View style={styles.routineStats}>
-            <Text style={styles.routineStatText}>✓ {rutina.vecesCompletada} veces</Text>
-            <Text style={styles.routineStatText}>{rutina.ultimaVez}</Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  </TouchableOpacity>
-)
-)} 
-
             </View>
             </ScrollView>
             <TouchableOpacity
@@ -243,7 +235,8 @@ try {
         id:selectedRoutine?.id,
         nombre:selectedRoutine?.nombre,
         ejercios:selectedRoutine?.ejercicios,
-        cantidad:selectedRoutine.ejercicios.length
+        cantidad:selectedRoutine.ejercicios.length,
+        vecesHecha:selectedRoutine.vecesCompletada
         
       }
     })
@@ -266,19 +259,7 @@ try {
     </LinearGradient>
 </TouchableOpacity>
 
-            {/* Mensaje cuando no hay rutinas */}
-            {rutine.length === 0 && (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>Aún no tienes rutinas guardadas</Text>
-                {/* <TouchableOpacity
-                  //onPress={() => router.push('/generator')}
-                  activeOpacity={0.8}
-                  style={styles.emptyButton}
-                >
-                  <Text style={styles.emptyButtonText}>Crear mi primera rutina</Text>
-                </TouchableOpacity> */}
-              </View>
-            )}
+       
           </ScrollView>
         </Animated.View>
 
@@ -378,6 +359,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  routineIconContainerSelected: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#454545',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   routineInfo: {
     flex: 1,
     marginLeft: 16,
@@ -437,10 +426,11 @@ const styles = StyleSheet.create({
     marginTop: 60,
   },
   emptyText: {
-    fontSize: 16,
+    marginTop:100,
+    fontSize: 36,
     color: '#AAA',
     textAlign: 'center',
-    marginBottom: 24,
+    
   },
   emptyButton: {
     backgroundColor: '#FFC107',
@@ -554,4 +544,9 @@ routineCardSelected: {
   backgroundColor: "#2A2A2A",
   
 },
+loadingContainer: {
+  marginTop: 40,
+  justifyContent: "center",
+  alignItems: "center",
+}
 })

@@ -7,6 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { BarChart } from "react-native-chart-kit";
 import Collapsible from "react-native-collapsible";
+import { ActivityIndicator } from "react-native";
+
+import { getHistorialRoutineDataPerMonth,getHistorialRoutineDataPerYeak } from '../services/routines'
 
 
 // estas graficas contienen datos dummy pero que son claros para mostrar como funcionan los mimos
@@ -18,6 +21,18 @@ export default function MyRoutines() {
   const [expanded, setExpanded] = useState<boolean>(false);
   const [expanded2, setExpanded2] = useState<boolean>(false);
 
+
+  const [loading, setLoading] = useState(true);
+
+const [expandedMes, setExpandedMes] = useState<string | null>(null);
+
+const toggleMes = (mes: string) => {
+  setExpandedMes(expandedMes === mes ? null : mes);
+};
+
+
+  const [historialDate, setHistorialData]= useState<any>(null);
+
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -25,6 +40,101 @@ export default function MyRoutines() {
       useNativeDriver: true,
     }).start()
   }, [])
+
+useEffect(() => {
+  const loadHistorialData = async () => {
+    try {
+      const data = await getHistorialRoutineDataPerMonth();
+
+      const resultado: any[] = [];
+
+      // recorrer meses
+      Object.entries(data).forEach(([monthName, weeks]: any) => {
+        
+        // recorrer semanas dentro del mes
+        Object.entries(weeks).forEach(([weekName, items]: any) => {
+
+          // recorrer las rutinas dentro de la semana
+          items.forEach((item: any) => {
+            resultado.push({
+              mes: monthName,
+              semana: weekName,
+              idRoutina: item.routine,
+              fecha: item.Date_realization,
+              tiempoHecho: item.Time_to_done,
+            });
+          });
+
+        });
+      });
+
+      setHistorialData(data);
+      console.log("Historial mapeado:", data);
+
+    } catch (error) {
+      console.log("Error cargando historial:", error);
+    } finally{
+    setLoading(false);
+
+    }
+  };
+
+  loadHistorialData();
+}, []);
+
+
+
+const totales: Record<string, Record<string, number>> = {};
+
+if(historialDate){
+  
+  Object.entries(historialDate).forEach(([mes, semanas]: any) => {
+    totales[mes] = {};  // Crear entrada del mes
+    
+    Object.entries(semanas).forEach(([semana, items]: any) => {
+      totales[mes][semana] = items.reduce(
+        (acc: number, rutina: any) => acc +  Math.round(rutina.Time_to_done / 60),
+        0
+      );
+    });
+  });
+  
+}
+const mesesConDatos = Object.entries(totales).filter(([mes, semanas]) =>
+  Object.values(semanas).some((valor: number) => valor > 0)
+);
+
+
+const convertirDatosGrafica = (semanas: any) => {
+  const labels = ["1ra", "2da", "3ra", "4ta", "5ta"];
+
+  const datos = [
+    semanas.week_1,
+    semanas.week_2,
+    semanas.week_3,
+    semanas.week_4,
+    semanas.week_5,
+  ];
+
+  return { labels, datos };
+};
+
+
+const mesesES: Record<string, string> = {
+  January: "Enero",
+  February: "Febrero",
+  March: "Marzo",
+  April: "Abril",
+  May: "Mayo",
+  June: "Junio",
+  July: "Julio",
+  August: "Agosto",
+  September: "Septiembre",
+  October: "Octubre",
+  November: "Noviembre",
+  December: "Diciembre",
+};
+
 
   return (
   <LinearGradient colors={["#0A0A0A", "#1A1A1A"]} style={styles.container}>
@@ -45,23 +155,44 @@ export default function MyRoutines() {
             <Text style={styles.greeting}>Historial de progreso</Text>
           </View>
 
-          {/* Tarjeta del acordeón */}
-          <View style={styles.card}>
+        {loading && (
+            <View style={styles.loadingContainer}>
+    <ActivityIndicator size="large" color="#FFD369" />
+    <Text style={{ color: "#FFF", marginTop: 10 }}>Cargando datos...</Text>
+  </View>
+        )}
+
+{!loading && mesesConDatos.length === 0 && (
+  <View style={{ padding: 20 }}>
+    <Text style={{ color: "#FFF", textAlign: "center", fontSize: 16 }}>
+      No se encontraron datos en tu historial.
+    </Text>
+  </View>
+)}
+{!loading && mesesConDatos.length>0 && (
+
+
+<>
+      {mesesConDatos.map(([mes,semanas]:any)=> {
+        const {labels, datos}=convertirDatosGrafica(semanas)
+        return (
+          
+          <View  key= {mes}style={styles.card}>
             <TouchableOpacity
               style={styles.accordionButton}
-              onPress={() => setExpanded(!expanded)}
-            >
+              onPress={() => {toggleMes(mes); }}
+              >
               <Text style={styles.accordionText}>
-                {expanded ? "Ocultar gráfico" : "Ver gráfico mensual"}
+                {expandedMes === mes ? `Ocultar gráfico de ${mesesES[mes]}` : `Ver gráfico mensual de ${mesesES[mes]}`}
               </Text>
             </TouchableOpacity>
 
-            <Collapsible collapsed={!expanded}>
+            <Collapsible collapsed={expandedMes!==mes}>
               <View style={styles.chartContainer}>
                 <BarChart
                   data={{
-                    labels: ["1ra", "2da", "3ra", "4ta"],
-                    datasets: [{ data: [20, 50, 28, 67] }],
+                    labels: labels,
+                    datasets: [{ data: datos }],
                   }}
                   width={Dimensions.get("window").width - 60}
                   height={240}
@@ -85,55 +216,16 @@ export default function MyRoutines() {
                     },
                   }}
                   style={styles.chart}
-                />
+                  />
               </View>
             </Collapsible>
           </View>
+        )
+      })}
+      </>
 
-          {/* Segunda tarjeta */}
-          <View style={styles.card}>
-            <TouchableOpacity
-              style={styles.accordionButton}
-              onPress={() => setExpanded2(!expanded2)}
-            >
-              <Text style={styles.accordionText}>
-                Resultados de enero
-              </Text>
-            </TouchableOpacity>
 
-            <Collapsible collapsed={!expanded2}>
-              <View style={styles.chartContainer}>
-                <BarChart
-                  data={{
-                    labels: ["1ra", "2da", "3ra", "4ta"],
-                    datasets: [{ data: [20, 50, 28, 67] }],
-                  }}
-                  width={Dimensions.get("window").width - 60}
-                  height={240}
-                  fromZero
-                  yAxisLabel=""
-                  yAxisSuffix=""
-                  chartConfig={{
-                    backgroundColor: "transparent",
-                    backgroundGradientFrom: "transparent",
-                    backgroundGradientTo: "transparent",
-                    decimalPlaces: 0,
-                    color: () => "#FFFFFF",
-                    fillShadowGradient: "#FFD369",
-                    fillShadowGradientOpacity: 1,
-                    propsForBackgroundLines: {
-                      strokeDasharray: "",
-                      stroke: "rgba(255,255,255,0.1)",
-                    },
-                    propsForLabels: {
-                      fill: "#FFF",
-                    },
-                  }}
-                  style={styles.chart}
-                />
-              </View>
-            </Collapsible>
-          </View>
+)}
 
         </ScrollView>
       </Animated.View>
@@ -208,4 +300,10 @@ const styles = StyleSheet.create({
   chart: {
     borderRadius: 16,
   },
+loadingContainer: {
+  marginTop: 40,
+  justifyContent: "center",
+  alignItems: "center",
+}
+
 })

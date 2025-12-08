@@ -1,13 +1,24 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import { createRoutineHistoryData, updateRoutine } from "../services/routines";
+import { ToastAndroid } from "react-native";
 
 
 export default function CompletedRoutine() {
-    const {TiempoTrans} =useLocalSearchParams()
+    const {TiempoTrans,idRoutine,veceshecho,tiempodescansado} =useLocalSearchParams()
 
+    const [loading, setLoading] = useState(false);
+    const descansototal= 600;
+    const sobrante=Number(tiempodescansado);
+    const descansado= descansototal-sobrante
+
+
+
+
+    const veces=Number(veceshecho)
     const tiempo=Number(TiempoTrans)
 
     const formatTime = (secs:number) => {
@@ -15,6 +26,45 @@ export default function CompletedRoutine() {
   const s = (secs % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 };
+
+
+
+  const handleUpdateRoutine = async () => {
+    try{
+      setLoading(true)
+      //actualiza la rutina
+      const rutinaActualizada= {
+         Last_time_done :new Date().toISOString(), //(es del dateTimefield de djnago)
+          Times_done: veces+1// integer
+      };
+        await updateRoutine(Number(idRoutine), rutinaActualizada);
+
+
+        //crea un registro del historial, no confundir nombres
+          const Historialrutina= {
+         routine :Number(idRoutine) ,
+        Date_realization: new Date().toISOString(),
+          Time_to_done:tiempo,
+          
+      };
+      await createRoutineHistoryData(Historialrutina);
+      ToastAndroid.show("Se guardaron registro de rutina",ToastAndroid.SHORT)
+
+        router.push("/screens/home-screen")
+    } catch (error){
+        console.log("Error actualizando rutina:", error);
+    }  finally{
+     setLoading(false)
+  }
+
+  }
+
+
+  
+ 
+  
+  
+ 
 
 
   const router=useRouter();
@@ -37,16 +87,14 @@ export default function CompletedRoutine() {
           <View style={styles.leftColumn}>
             <Text style={styles.leftText}>Duración total</Text>
             <Text style={styles.leftText}>Tiempo descansado</Text>
-            <Text style={styles.leftText}>Series completas</Text>
-            <Text style={styles.leftText}>Ejercicios hechos</Text>
+
           </View>
 
           {/* DERECHA */}
           <View style={styles.rightColumn}>
             <Text style={styles.rightText}>{formatTime(tiempo)}</Text>
-            <Text style={styles.rightText}>7:10 min</Text>
-            <Text style={styles.rightText}>12</Text>
-            <Text style={styles.rightText}>5</Text>
+            <Text style={styles.rightText}>{formatTime(descansado)}</Text>
+
           </View>
 
         </View>
@@ -56,34 +104,23 @@ export default function CompletedRoutine() {
             <TouchableOpacity
     style={styles.fixedButton}
     onPress={() => {
-      
-    router.push("/screens/home-screen")
-
-    //   router.push(
-    //   {
-    //   pathname:"/screens/routineProgress",
-    //   params:{
-    //     nombre:selectedRoutine?.nombre,
-    //     Ejercicios: selectedRoutine?.Ejercici,
-    //     id:selectedRoutine?.id
-    //   }
-    // })
+      handleUpdateRoutine();
   }}
     activeOpacity={0.9}
+    disabled={loading}
 >
     <LinearGradient
         colors={['#FFD369', '#FF9A00']} // Amarillo → Naranja
         style={styles.gradient}
     >
-        <Ionicons
-            name="home"
-            size={22}
-            color="white"
-        />
-        <Text style={styles.createButtonText}>
-           Finalizar
-        </Text>
-
+      {loading ? (
+      <ActivityIndicator size="small" color="#fff" />
+    ) : (
+      <>
+        <Ionicons name="home" size={22} color="white" />
+        <Text style={styles.createButtonText}>Finalizar</Text>
+      </>
+    )}
     </LinearGradient>
 </TouchableOpacity>
 
