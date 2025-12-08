@@ -1,12 +1,15 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import { createRoutineHistoryData, updateRoutine } from "../services/routines";
 
 
 export default function CompletedRoutine() {
-    const {TiempoTrans} =useLocalSearchParams()
+    const {TiempoTrans,idRoutine} =useLocalSearchParams()
+
+    const [loading, setLoading] = useState(false);
 
     const tiempo=Number(TiempoTrans)
 
@@ -15,6 +18,41 @@ export default function CompletedRoutine() {
   const s = (secs % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 };
+
+
+  const handleUpdateRoutine = async () => {
+    try{
+      setLoading(true)
+      const rutinaActualizada= {
+         Last_time_done :new Date().toISOString(), //(es del dateTimefield de djnago)
+          Times_done: 5// integer
+      };
+        await updateRoutine(Number(idRoutine), rutinaActualizada);
+
+          const Historialrutina= {
+         routine :Number(idRoutine) ,
+        Date_realization: new Date().toISOString(),
+          Time_to_done:tiempo
+      };
+      await createRoutineHistoryData(Historialrutina);
+
+      alert(" guarde historial y actualize")
+
+        router.push("/screens/home-screen")
+    } catch (error){
+        console.log("Error actualizando rutina:", error);
+    }  finally{
+     setLoading(false)
+  }
+
+  }
+
+
+  
+ 
+  
+  
+ 
 
 
   const router=useRouter();
@@ -56,34 +94,23 @@ export default function CompletedRoutine() {
             <TouchableOpacity
     style={styles.fixedButton}
     onPress={() => {
-      
-    router.push("/screens/home-screen")
-
-    //   router.push(
-    //   {
-    //   pathname:"/screens/routineProgress",
-    //   params:{
-    //     nombre:selectedRoutine?.nombre,
-    //     Ejercicios: selectedRoutine?.Ejercici,
-    //     id:selectedRoutine?.id
-    //   }
-    // })
+      handleUpdateRoutine();
   }}
     activeOpacity={0.9}
+    disabled={loading}
 >
     <LinearGradient
         colors={['#FFD369', '#FF9A00']} // Amarillo → Naranja
         style={styles.gradient}
     >
-        <Ionicons
-            name="home"
-            size={22}
-            color="white"
-        />
-        <Text style={styles.createButtonText}>
-           Finalizar
-        </Text>
-
+      {loading ? (
+      <ActivityIndicator size="small" color="#fff" />
+    ) : (
+      <>
+        <Ionicons name="home" size={22} color="white" />
+        <Text style={styles.createButtonText}>Finalizar</Text>
+      </>
+    )}
     </LinearGradient>
 </TouchableOpacity>
 

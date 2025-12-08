@@ -18,9 +18,6 @@ export default function RoutineProgressScreen() {
   const cantidadNum= Number(cantidad);
   const cantidadStr = Array.isArray(ejercios) ? ejercios[0] : ejercios;
 
-
-
-  
 // 2. Convertir string a array de números
 const exerciseIds: number[] = cantidadStr
   ? cantidadStr.split(",").map((id) => Number(id))
@@ -46,7 +43,6 @@ const exerciseIds: number[] = cantidadStr
   const [ejercicios,setEjercicio] = useState<any>();
 
 
-  const [tiempoTrans, setTiempoTrans]= useState(0);
   
 
   const [isPaused, setIsPaused] = useState<boolean>(false);
@@ -294,7 +290,8 @@ if(currentIndex < ejercicios.length -1 ){
   router.push({
     pathname:"/screens/training-complete",
     params:{
-      TiempoTrans:totalTime
+      TiempoTrans:totalTime,
+      idRoutine:id
     }
   })
   

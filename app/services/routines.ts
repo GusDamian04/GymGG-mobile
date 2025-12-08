@@ -39,7 +39,7 @@ export async function getRoutineById(id: number) {
 
 export async function updateRoutine(id: number, data: any) {
     try {
-        const response = await api.put(`${API_URL}/routines/${id}/`, data);
+        const response = await api.patch(`${API_URL}/routines/routines/${id}/`, data);
         return response.data;
     } catch (error: any) {
         console.log("Error al actualizar rutina:", error.response?.data || error);
@@ -55,5 +55,39 @@ export async function deleteRoutine(id: number) {
     } catch (error: any) {
         console.log("Error al eliminar rutina:", error.response?.data || error);
         throw new Error("No se pudo eliminar la rutina");
+    }
+}
+
+//_______________funciones de Historial__________________
+
+
+export async function createRoutineHistoryData(data:any){
+      try {
+        const response = await api.post(`${API_URL}/routines/routine-history/`, data);
+        return response.data;
+    } catch (error: any) {
+        console.log("Error al crear rutina:", error.response?.data || error);
+        throw new Error("No se pudo guardar el historial de  rutina");
+    }  
+}
+
+export async function getHistorialRoutineDataPerMonth(){
+    try{
+            const response = await api.get(`${API_URL}/routines/routine-history/all_months`);
+            return response.data;
+        
+    } catch (error:any){
+        console.log("Error al cargar Info del historial",error.response?.data || error);
+        throw new Error("no se cargo el historial")
+    }
+}
+export async function getHistorialRoutineDataPerYeak(){
+    try{
+            const response = await api.get(`${API_URL}/routines/routine-history/this_week`);
+            return response.data;
+        
+    } catch (error:any){
+        console.log("Error al cargar Info del historial",error.response?.data || error);
+        throw new Error("no se cargo el historial")
     }
 }

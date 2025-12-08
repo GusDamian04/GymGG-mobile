@@ -5,6 +5,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { createRoutineEndPoint } from "../services/routines";
+import { ActivityIndicator } from "react-native";
+
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getExercises } from "../services/exercises";
@@ -71,10 +73,6 @@ export default function CreateRoutine () {
     };
     loadExer();
   },[]);
-
-  if (loading) {
-        return <Text>Cargando...</Text>;
-    }
 
 const handleCreateRoutine = async () => {
   const stored = await AsyncStorage.getItem("user_id");
@@ -181,9 +179,15 @@ const filteredExercises = selectedPart
               Ejercicios disponibles
             
             </Text>
+      {loading && (
+            <View style={styles.loadingContainer}>
+    <ActivityIndicator size="large" color="#FFD369" />
+    <Text style={{ color: "#FFF", marginTop: 10 }}>Cargando datos...</Text>
+  </View>
+        )}
 
-{!selectedPart && (
-  <Text style={{ color: "#aaa", marginBottom: 10 }}>
+{!loading && !selectedPart && (
+  <Text style={{ color: "#aaa", marginBottom: 20,marginTop:20,fontSize:20 }}>
     Selecciona una parte del cuerpo para ver ejercicios disponibles.
   </Text>
 )}
@@ -442,5 +446,10 @@ optionText: {
   fontSize: 14,
   color: "#757575",
   marginTop: 2,
+},
+loadingContainer: {
+  marginTop: 40,
+  justifyContent: "center",
+  alignItems: "center",
 }
 });
